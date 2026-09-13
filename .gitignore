@@ -1,0 +1,16 @@
+/target/
+/sessions/
+/exports/
+/artifacts/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+.idea/
+.vscode/
+.sites-runtime/
+MOONLIGHT.md
+.codex/MOONLIGHT.md
+.agent/MOONLIGHT.md
+
