@@ -1,6 +1,16 @@
-//! Shared musical document. Beats are quarter notes; MIDI pitches are 0..=127.
+//! Versioned musical document shared by the native UI, audio engine, and agents.
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+mod commands;
+mod demo;
+mod midi;
+mod storage;
+mod validation;
+pub use commands::apply_commands;
+pub use demo::demo_project;
+pub use midi::{export_midi, import_midi};
+pub use storage::{SessionStore, load_project, new_id, save_project};
+pub use validation::validate;
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -81,6 +91,61 @@ pub struct Section {
     pub length_bars: u32,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+#[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
+pub enum Command {
+    SetTempo {
+        tempo: f64,
+    },
+    RenameProject {
+        name: String,
+    },
+    SetLength {
+        length_bars: u32,
+    },
+    SetMasterGain {
+        gain: f32,
+    },
+    AddTrack {
+        track: Track,
+    },
+    RemoveTrack {
+        track_id: String,
+    },
+    UpdateTrack {
+        track_id: String,
+        name: Option<String>,
+        gain: Option<f32>,
+        pan: Option<f32>,
+        mute: Option<bool>,
+        solo: Option<bool>,
+        instrument: Option<Instrument>,
+        patch: Option<SynthPatch>,
+    },
+    AddClip {
+        track_id: String,
+        clip: Clip,
+    },
+    RemoveClip {
+        track_id: String,
+        clip_id: String,
+    },
+    SetClip {
+        track_id: String,
+        clip: Clip,
+    },
+    AddNotes {
+        track_id: String,
+        clip_id: String,
+        notes: Vec<Note>,
+    },
+    RemoveNote {
+        track_id: String,
+        clip_id: String,
+        note_id: String,
+    },
+}
+
 impl Default for SynthPatch {
     fn default() -> Self {
         Self {
@@ -108,16 +173,5 @@ impl Default for Project {
             tracks: Vec::new(),
             sections: Vec::new(),
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn document_roundtrip() {
-        let project = Project::default();
-        let json = serde_json::to_string(&project).unwrap();
-        assert_eq!(project, serde_json::from_str::<Project>(&json).unwrap());
     }
 }

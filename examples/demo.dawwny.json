@@ -1,0 +1,3016 @@
+{
+  "schema_version": 1,
+  "id": "velvet-dawn",
+  "name": "Velvet Dawn",
+  "revision": 0,
+  "tempo": 92.0,
+  "length_bars": 16,
+  "master_gain": 0.7,
+  "tracks": [
+    {
+      "id": "track-0",
+      "name": "Felt keys",
+      "color": [
+        168,
+        143,
+        223
+      ],
+      "instrument": "keys",
+      "gain": 0.52,
+      "pan": -0.12,
+      "mute": false,
+      "solo": false,
+      "patch": {
+        "attack": 0.008,
+        "decay": 0.7,
+        "sustain": 0.24,
+        "release": 0.35,
+        "cutoff": 5200.0,
+        "reverb": 0.25,
+        "delay": 0.0
+      },
+      "clips": [
+        {
+          "id": "clip-0-0",
+          "name": "Dm9 · Bb · F · C",
+          "start": 0.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-0-0-0",
+              "pitch": 62,
+              "start": 0.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-0-1",
+              "pitch": 62,
+              "start": 2.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-2",
+              "pitch": 65,
+              "start": 0.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-0-3",
+              "pitch": 65,
+              "start": 2.528,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-4",
+              "pitch": 69,
+              "start": 0.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-0-5",
+              "pitch": 69,
+              "start": 2.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-6",
+              "pitch": 72,
+              "start": 0.036000000000000004,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-0-7",
+              "pitch": 72,
+              "start": 2.544,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-8",
+              "pitch": 58,
+              "start": 4.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-0-9",
+              "pitch": 58,
+              "start": 6.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-10",
+              "pitch": 62,
+              "start": 4.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-0-11",
+              "pitch": 62,
+              "start": 6.528,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-12",
+              "pitch": 65,
+              "start": 4.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-0-13",
+              "pitch": 65,
+              "start": 6.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-14",
+              "pitch": 69,
+              "start": 4.036,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-0-15",
+              "pitch": 69,
+              "start": 6.544,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-16",
+              "pitch": 60,
+              "start": 8.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-0-17",
+              "pitch": 60,
+              "start": 10.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-18",
+              "pitch": 65,
+              "start": 8.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-0-19",
+              "pitch": 65,
+              "start": 10.527999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-20",
+              "pitch": 69,
+              "start": 8.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-0-21",
+              "pitch": 69,
+              "start": 10.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-22",
+              "pitch": 72,
+              "start": 8.036,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-0-23",
+              "pitch": 72,
+              "start": 10.543999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-24",
+              "pitch": 60,
+              "start": 12.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-0-25",
+              "pitch": 60,
+              "start": 14.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-26",
+              "pitch": 64,
+              "start": 12.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-0-27",
+              "pitch": 64,
+              "start": 14.527999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-28",
+              "pitch": 67,
+              "start": 12.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-0-29",
+              "pitch": 67,
+              "start": 14.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-0-30",
+              "pitch": 74,
+              "start": 12.036,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-0-31",
+              "pitch": 74,
+              "start": 14.543999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            }
+          ]
+        },
+        {
+          "id": "clip-0-1",
+          "name": "Dm9 · Bb · F · C",
+          "start": 16.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-0-1-0",
+              "pitch": 62,
+              "start": 0.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-1-1",
+              "pitch": 62,
+              "start": 2.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-2",
+              "pitch": 65,
+              "start": 0.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-1-3",
+              "pitch": 65,
+              "start": 2.528,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-4",
+              "pitch": 69,
+              "start": 0.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-1-5",
+              "pitch": 69,
+              "start": 2.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-6",
+              "pitch": 72,
+              "start": 0.036000000000000004,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-1-7",
+              "pitch": 72,
+              "start": 2.544,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-8",
+              "pitch": 58,
+              "start": 4.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-1-9",
+              "pitch": 58,
+              "start": 6.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-10",
+              "pitch": 62,
+              "start": 4.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-1-11",
+              "pitch": 62,
+              "start": 6.528,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-12",
+              "pitch": 65,
+              "start": 4.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-1-13",
+              "pitch": 65,
+              "start": 6.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-14",
+              "pitch": 69,
+              "start": 4.036,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-1-15",
+              "pitch": 69,
+              "start": 6.544,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-16",
+              "pitch": 60,
+              "start": 8.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-1-17",
+              "pitch": 60,
+              "start": 10.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-18",
+              "pitch": 65,
+              "start": 8.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-1-19",
+              "pitch": 65,
+              "start": 10.527999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-20",
+              "pitch": 69,
+              "start": 8.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-1-21",
+              "pitch": 69,
+              "start": 10.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-22",
+              "pitch": 72,
+              "start": 8.036,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-1-23",
+              "pitch": 72,
+              "start": 10.543999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-24",
+              "pitch": 60,
+              "start": 12.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-1-25",
+              "pitch": 60,
+              "start": 14.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-26",
+              "pitch": 64,
+              "start": 12.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-1-27",
+              "pitch": 64,
+              "start": 14.527999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-28",
+              "pitch": 67,
+              "start": 12.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-1-29",
+              "pitch": 67,
+              "start": 14.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-1-30",
+              "pitch": 74,
+              "start": 12.036,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-1-31",
+              "pitch": 74,
+              "start": 14.543999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            }
+          ]
+        },
+        {
+          "id": "clip-0-2",
+          "name": "Dm9 · Bb · F · C",
+          "start": 32.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-0-2-0",
+              "pitch": 62,
+              "start": 0.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-2-1",
+              "pitch": 62,
+              "start": 2.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-2",
+              "pitch": 65,
+              "start": 0.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-2-3",
+              "pitch": 65,
+              "start": 2.528,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-4",
+              "pitch": 69,
+              "start": 0.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-2-5",
+              "pitch": 69,
+              "start": 2.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-6",
+              "pitch": 72,
+              "start": 0.036000000000000004,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-2-7",
+              "pitch": 72,
+              "start": 2.544,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-8",
+              "pitch": 58,
+              "start": 4.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-2-9",
+              "pitch": 58,
+              "start": 6.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-10",
+              "pitch": 62,
+              "start": 4.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-2-11",
+              "pitch": 62,
+              "start": 6.528,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-12",
+              "pitch": 65,
+              "start": 4.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-2-13",
+              "pitch": 65,
+              "start": 6.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-14",
+              "pitch": 69,
+              "start": 4.036,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-2-15",
+              "pitch": 69,
+              "start": 6.544,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-16",
+              "pitch": 60,
+              "start": 8.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-2-17",
+              "pitch": 60,
+              "start": 10.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-18",
+              "pitch": 65,
+              "start": 8.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-2-19",
+              "pitch": 65,
+              "start": 10.527999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-20",
+              "pitch": 69,
+              "start": 8.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-2-21",
+              "pitch": 69,
+              "start": 10.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-22",
+              "pitch": 72,
+              "start": 8.036,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-2-23",
+              "pitch": 72,
+              "start": 10.543999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-24",
+              "pitch": 60,
+              "start": 12.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-2-25",
+              "pitch": 60,
+              "start": 14.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-26",
+              "pitch": 64,
+              "start": 12.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-2-27",
+              "pitch": 64,
+              "start": 14.527999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-28",
+              "pitch": 67,
+              "start": 12.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-2-29",
+              "pitch": 67,
+              "start": 14.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-2-30",
+              "pitch": 74,
+              "start": 12.036,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-2-31",
+              "pitch": 74,
+              "start": 14.543999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            }
+          ]
+        },
+        {
+          "id": "clip-0-3",
+          "name": "Dm9 · Bb · F · C",
+          "start": 48.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-0-3-0",
+              "pitch": 62,
+              "start": 0.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-3-1",
+              "pitch": 62,
+              "start": 2.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-2",
+              "pitch": 65,
+              "start": 0.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-3-3",
+              "pitch": 65,
+              "start": 2.528,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-4",
+              "pitch": 69,
+              "start": 0.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-3-5",
+              "pitch": 69,
+              "start": 2.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-6",
+              "pitch": 72,
+              "start": 0.036000000000000004,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-3-7",
+              "pitch": 72,
+              "start": 2.544,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-8",
+              "pitch": 58,
+              "start": 4.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-3-9",
+              "pitch": 58,
+              "start": 6.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-10",
+              "pitch": 62,
+              "start": 4.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-3-11",
+              "pitch": 62,
+              "start": 6.528,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-12",
+              "pitch": 65,
+              "start": 4.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-3-13",
+              "pitch": 65,
+              "start": 6.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-14",
+              "pitch": 69,
+              "start": 4.036,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-3-15",
+              "pitch": 69,
+              "start": 6.544,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-16",
+              "pitch": 60,
+              "start": 8.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-3-17",
+              "pitch": 60,
+              "start": 10.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-18",
+              "pitch": 65,
+              "start": 8.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-3-19",
+              "pitch": 65,
+              "start": 10.527999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-20",
+              "pitch": 69,
+              "start": 8.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-3-21",
+              "pitch": 69,
+              "start": 10.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-22",
+              "pitch": 72,
+              "start": 8.036,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-3-23",
+              "pitch": 72,
+              "start": 10.543999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-24",
+              "pitch": 60,
+              "start": 12.0,
+              "duration": 1.55,
+              "velocity": 0.6
+            },
+            {
+              "id": "note-0-3-25",
+              "pitch": 60,
+              "start": 14.52,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-26",
+              "pitch": 64,
+              "start": 12.012,
+              "duration": 1.55,
+              "velocity": 0.57500005
+            },
+            {
+              "id": "note-0-3-27",
+              "pitch": 64,
+              "start": 14.527999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-28",
+              "pitch": 67,
+              "start": 12.024,
+              "duration": 1.55,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-0-3-29",
+              "pitch": 67,
+              "start": 14.536,
+              "duration": 1.25,
+              "velocity": 0.42
+            },
+            {
+              "id": "note-0-3-30",
+              "pitch": 74,
+              "start": 12.036,
+              "duration": 1.55,
+              "velocity": 0.52500004
+            },
+            {
+              "id": "note-0-3-31",
+              "pitch": 74,
+              "start": 14.543999999999999,
+              "duration": 1.25,
+              "velocity": 0.42
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "track-1",
+      "name": "Cloud pad",
+      "color": [
+        85,
+        173,
+        174
+      ],
+      "instrument": "pad",
+      "gain": 0.32,
+      "pan": 0.0,
+      "mute": false,
+      "solo": false,
+      "patch": {
+        "attack": 0.7,
+        "decay": 0.25,
+        "sustain": 0.55,
+        "release": 1.8,
+        "cutoff": 2400.0,
+        "reverb": 0.5,
+        "delay": 0.0
+      },
+      "clips": [
+        {
+          "id": "clip-1-0",
+          "name": "Slow bloom",
+          "start": 0.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-1-0-0",
+              "pitch": 50,
+              "start": 0.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-0-1",
+              "pitch": 53,
+              "start": 0.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-0-2",
+              "pitch": 57,
+              "start": 0.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-0-3",
+              "pitch": 46,
+              "start": 4.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-0-4",
+              "pitch": 50,
+              "start": 4.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-0-5",
+              "pitch": 53,
+              "start": 4.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-0-6",
+              "pitch": 48,
+              "start": 8.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-0-7",
+              "pitch": 53,
+              "start": 8.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-0-8",
+              "pitch": 57,
+              "start": 8.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-0-9",
+              "pitch": 48,
+              "start": 12.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-0-10",
+              "pitch": 52,
+              "start": 12.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-0-11",
+              "pitch": 55,
+              "start": 12.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            }
+          ]
+        },
+        {
+          "id": "clip-1-1",
+          "name": "Slow bloom",
+          "start": 16.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-1-1-0",
+              "pitch": 50,
+              "start": 0.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-1-1",
+              "pitch": 53,
+              "start": 0.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-1-2",
+              "pitch": 57,
+              "start": 0.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-1-3",
+              "pitch": 46,
+              "start": 4.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-1-4",
+              "pitch": 50,
+              "start": 4.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-1-5",
+              "pitch": 53,
+              "start": 4.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-1-6",
+              "pitch": 48,
+              "start": 8.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-1-7",
+              "pitch": 53,
+              "start": 8.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-1-8",
+              "pitch": 57,
+              "start": 8.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-1-9",
+              "pitch": 48,
+              "start": 12.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-1-10",
+              "pitch": 52,
+              "start": 12.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-1-11",
+              "pitch": 55,
+              "start": 12.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            }
+          ]
+        },
+        {
+          "id": "clip-1-2",
+          "name": "Slow bloom",
+          "start": 32.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-1-2-0",
+              "pitch": 50,
+              "start": 0.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-2-1",
+              "pitch": 53,
+              "start": 0.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-2-2",
+              "pitch": 57,
+              "start": 0.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-2-3",
+              "pitch": 46,
+              "start": 4.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-2-4",
+              "pitch": 50,
+              "start": 4.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-2-5",
+              "pitch": 53,
+              "start": 4.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-2-6",
+              "pitch": 48,
+              "start": 8.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-2-7",
+              "pitch": 53,
+              "start": 8.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-2-8",
+              "pitch": 57,
+              "start": 8.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-2-9",
+              "pitch": 48,
+              "start": 12.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-2-10",
+              "pitch": 52,
+              "start": 12.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-2-11",
+              "pitch": 55,
+              "start": 12.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            }
+          ]
+        },
+        {
+          "id": "clip-1-3",
+          "name": "Slow bloom",
+          "start": 48.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-1-3-0",
+              "pitch": 50,
+              "start": 0.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-3-1",
+              "pitch": 53,
+              "start": 0.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-3-2",
+              "pitch": 57,
+              "start": 0.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-3-3",
+              "pitch": 46,
+              "start": 4.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-3-4",
+              "pitch": 50,
+              "start": 4.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-3-5",
+              "pitch": 53,
+              "start": 4.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-3-6",
+              "pitch": 48,
+              "start": 8.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-3-7",
+              "pitch": 53,
+              "start": 8.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-3-8",
+              "pitch": 57,
+              "start": 8.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-3-9",
+              "pitch": 48,
+              "start": 12.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-3-10",
+              "pitch": 52,
+              "start": 12.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            },
+            {
+              "id": "note-1-3-11",
+              "pitch": 55,
+              "start": 12.0,
+              "duration": 3.8,
+              "velocity": 0.46
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "track-2",
+      "name": "Round bass",
+      "color": [
+        212,
+        163,
+        97
+      ],
+      "instrument": "bass",
+      "gain": 0.7,
+      "pan": 0.0,
+      "mute": false,
+      "solo": false,
+      "patch": {
+        "attack": 0.008,
+        "decay": 0.25,
+        "sustain": 0.7,
+        "release": 0.13,
+        "cutoff": 1300.0,
+        "reverb": 0.0,
+        "delay": 0.0
+      },
+      "clips": [
+        {
+          "id": "clip-2-1",
+          "name": "Root motion",
+          "start": 16.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-2-1-0",
+              "pitch": 38,
+              "start": 0.0,
+              "duration": 1.65,
+              "velocity": 0.79
+            },
+            {
+              "id": "note-2-1-1",
+              "pitch": 38,
+              "start": 2.0,
+              "duration": 0.62,
+              "velocity": 0.57
+            },
+            {
+              "id": "note-2-1-2",
+              "pitch": 50,
+              "start": 3.25,
+              "duration": 0.5,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-2-1-3",
+              "pitch": 34,
+              "start": 4.0,
+              "duration": 1.65,
+              "velocity": 0.79
+            },
+            {
+              "id": "note-2-1-4",
+              "pitch": 34,
+              "start": 6.0,
+              "duration": 0.62,
+              "velocity": 0.57
+            },
+            {
+              "id": "note-2-1-5",
+              "pitch": 46,
+              "start": 7.25,
+              "duration": 0.5,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-2-1-6",
+              "pitch": 41,
+              "start": 8.0,
+              "duration": 1.65,
+              "velocity": 0.79
+            },
+            {
+              "id": "note-2-1-7",
+              "pitch": 41,
+              "start": 10.0,
+              "duration": 0.62,
+              "velocity": 0.57
+            },
+            {
+              "id": "note-2-1-8",
+              "pitch": 53,
+              "start": 11.25,
+              "duration": 0.5,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-2-1-9",
+              "pitch": 36,
+              "start": 12.0,
+              "duration": 1.65,
+              "velocity": 0.79
+            },
+            {
+              "id": "note-2-1-10",
+              "pitch": 36,
+              "start": 14.0,
+              "duration": 0.62,
+              "velocity": 0.57
+            },
+            {
+              "id": "note-2-1-11",
+              "pitch": 48,
+              "start": 15.25,
+              "duration": 0.5,
+              "velocity": 0.48
+            }
+          ]
+        },
+        {
+          "id": "clip-2-2",
+          "name": "Root motion",
+          "start": 32.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-2-2-0",
+              "pitch": 38,
+              "start": 0.0,
+              "duration": 1.65,
+              "velocity": 0.79
+            },
+            {
+              "id": "note-2-2-1",
+              "pitch": 38,
+              "start": 2.0,
+              "duration": 0.62,
+              "velocity": 0.57
+            },
+            {
+              "id": "note-2-2-2",
+              "pitch": 50,
+              "start": 3.25,
+              "duration": 0.5,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-2-2-3",
+              "pitch": 34,
+              "start": 4.0,
+              "duration": 1.65,
+              "velocity": 0.79
+            },
+            {
+              "id": "note-2-2-4",
+              "pitch": 34,
+              "start": 6.0,
+              "duration": 0.62,
+              "velocity": 0.57
+            },
+            {
+              "id": "note-2-2-5",
+              "pitch": 46,
+              "start": 7.25,
+              "duration": 0.5,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-2-2-6",
+              "pitch": 41,
+              "start": 8.0,
+              "duration": 1.65,
+              "velocity": 0.79
+            },
+            {
+              "id": "note-2-2-7",
+              "pitch": 41,
+              "start": 10.0,
+              "duration": 0.62,
+              "velocity": 0.57
+            },
+            {
+              "id": "note-2-2-8",
+              "pitch": 53,
+              "start": 11.25,
+              "duration": 0.5,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-2-2-9",
+              "pitch": 36,
+              "start": 12.0,
+              "duration": 1.65,
+              "velocity": 0.79
+            },
+            {
+              "id": "note-2-2-10",
+              "pitch": 36,
+              "start": 14.0,
+              "duration": 0.62,
+              "velocity": 0.57
+            },
+            {
+              "id": "note-2-2-11",
+              "pitch": 48,
+              "start": 15.25,
+              "duration": 0.5,
+              "velocity": 0.48
+            }
+          ]
+        },
+        {
+          "id": "clip-2-3",
+          "name": "Root motion",
+          "start": 48.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-2-3-0",
+              "pitch": 38,
+              "start": 0.0,
+              "duration": 1.65,
+              "velocity": 0.79
+            },
+            {
+              "id": "note-2-3-1",
+              "pitch": 38,
+              "start": 2.0,
+              "duration": 0.62,
+              "velocity": 0.57
+            },
+            {
+              "id": "note-2-3-2",
+              "pitch": 50,
+              "start": 3.25,
+              "duration": 0.5,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-2-3-3",
+              "pitch": 34,
+              "start": 4.0,
+              "duration": 1.65,
+              "velocity": 0.79
+            },
+            {
+              "id": "note-2-3-4",
+              "pitch": 34,
+              "start": 6.0,
+              "duration": 0.62,
+              "velocity": 0.57
+            },
+            {
+              "id": "note-2-3-5",
+              "pitch": 46,
+              "start": 7.25,
+              "duration": 0.5,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-2-3-6",
+              "pitch": 41,
+              "start": 8.0,
+              "duration": 1.65,
+              "velocity": 0.79
+            },
+            {
+              "id": "note-2-3-7",
+              "pitch": 41,
+              "start": 10.0,
+              "duration": 0.62,
+              "velocity": 0.57
+            },
+            {
+              "id": "note-2-3-8",
+              "pitch": 53,
+              "start": 11.25,
+              "duration": 0.5,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-2-3-9",
+              "pitch": 36,
+              "start": 12.0,
+              "duration": 1.65,
+              "velocity": 0.79
+            },
+            {
+              "id": "note-2-3-10",
+              "pitch": 36,
+              "start": 14.0,
+              "duration": 0.62,
+              "velocity": 0.57
+            },
+            {
+              "id": "note-2-3-11",
+              "pitch": 48,
+              "start": 15.25,
+              "duration": 0.5,
+              "velocity": 0.48
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "track-3",
+      "name": "Pocket kit",
+      "color": [
+        124,
+        167,
+        212
+      ],
+      "instrument": "drums",
+      "gain": 0.68,
+      "pan": 0.0,
+      "mute": false,
+      "solo": false,
+      "patch": {
+        "attack": 0.008,
+        "decay": 0.25,
+        "sustain": 0.55,
+        "release": 0.1,
+        "cutoff": 8000.0,
+        "reverb": 0.07,
+        "delay": 0.0
+      },
+      "clips": [
+        {
+          "id": "clip-3-1",
+          "name": "Backbeat",
+          "start": 16.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-3-1-0",
+              "pitch": 36,
+              "start": 0.0,
+              "duration": 0.2,
+              "velocity": 0.88
+            },
+            {
+              "id": "note-3-1-1",
+              "pitch": 38,
+              "start": 1.012,
+              "duration": 0.18,
+              "velocity": 0.73
+            },
+            {
+              "id": "note-3-1-2",
+              "pitch": 36,
+              "start": 2.5,
+              "duration": 0.2,
+              "velocity": 0.66
+            },
+            {
+              "id": "note-3-1-3",
+              "pitch": 38,
+              "start": 3.018,
+              "duration": 0.18,
+              "velocity": 0.78
+            },
+            {
+              "id": "note-3-1-4",
+              "pitch": 36,
+              "start": 4.0,
+              "duration": 0.2,
+              "velocity": 0.88
+            },
+            {
+              "id": "note-3-1-5",
+              "pitch": 38,
+              "start": 5.0120000000000005,
+              "duration": 0.18,
+              "velocity": 0.73
+            },
+            {
+              "id": "note-3-1-6",
+              "pitch": 36,
+              "start": 6.5,
+              "duration": 0.2,
+              "velocity": 0.66
+            },
+            {
+              "id": "note-3-1-7",
+              "pitch": 38,
+              "start": 7.018,
+              "duration": 0.18,
+              "velocity": 0.78
+            },
+            {
+              "id": "note-3-1-8",
+              "pitch": 36,
+              "start": 8.0,
+              "duration": 0.2,
+              "velocity": 0.88
+            },
+            {
+              "id": "note-3-1-9",
+              "pitch": 38,
+              "start": 9.012,
+              "duration": 0.18,
+              "velocity": 0.73
+            },
+            {
+              "id": "note-3-1-10",
+              "pitch": 36,
+              "start": 10.5,
+              "duration": 0.2,
+              "velocity": 0.66
+            },
+            {
+              "id": "note-3-1-11",
+              "pitch": 38,
+              "start": 11.018,
+              "duration": 0.18,
+              "velocity": 0.78
+            },
+            {
+              "id": "note-3-1-12",
+              "pitch": 36,
+              "start": 12.0,
+              "duration": 0.2,
+              "velocity": 0.88
+            },
+            {
+              "id": "note-3-1-13",
+              "pitch": 38,
+              "start": 13.012,
+              "duration": 0.18,
+              "velocity": 0.73
+            },
+            {
+              "id": "note-3-1-14",
+              "pitch": 36,
+              "start": 14.5,
+              "duration": 0.2,
+              "velocity": 0.66
+            },
+            {
+              "id": "note-3-1-15",
+              "pitch": 38,
+              "start": 15.018,
+              "duration": 0.18,
+              "velocity": 0.78
+            },
+            {
+              "id": "note-3-1-16",
+              "pitch": 38,
+              "start": 15.75,
+              "duration": 0.12,
+              "velocity": 0.28
+            }
+          ]
+        },
+        {
+          "id": "clip-3-2",
+          "name": "Backbeat",
+          "start": 32.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-3-2-0",
+              "pitch": 36,
+              "start": 0.0,
+              "duration": 0.2,
+              "velocity": 0.88
+            },
+            {
+              "id": "note-3-2-1",
+              "pitch": 38,
+              "start": 1.012,
+              "duration": 0.18,
+              "velocity": 0.73
+            },
+            {
+              "id": "note-3-2-2",
+              "pitch": 36,
+              "start": 2.5,
+              "duration": 0.2,
+              "velocity": 0.66
+            },
+            {
+              "id": "note-3-2-3",
+              "pitch": 38,
+              "start": 3.018,
+              "duration": 0.18,
+              "velocity": 0.78
+            },
+            {
+              "id": "note-3-2-4",
+              "pitch": 36,
+              "start": 4.0,
+              "duration": 0.2,
+              "velocity": 0.88
+            },
+            {
+              "id": "note-3-2-5",
+              "pitch": 38,
+              "start": 5.0120000000000005,
+              "duration": 0.18,
+              "velocity": 0.73
+            },
+            {
+              "id": "note-3-2-6",
+              "pitch": 36,
+              "start": 6.5,
+              "duration": 0.2,
+              "velocity": 0.66
+            },
+            {
+              "id": "note-3-2-7",
+              "pitch": 38,
+              "start": 7.018,
+              "duration": 0.18,
+              "velocity": 0.78
+            },
+            {
+              "id": "note-3-2-8",
+              "pitch": 36,
+              "start": 8.0,
+              "duration": 0.2,
+              "velocity": 0.88
+            },
+            {
+              "id": "note-3-2-9",
+              "pitch": 38,
+              "start": 9.012,
+              "duration": 0.18,
+              "velocity": 0.73
+            },
+            {
+              "id": "note-3-2-10",
+              "pitch": 36,
+              "start": 10.5,
+              "duration": 0.2,
+              "velocity": 0.66
+            },
+            {
+              "id": "note-3-2-11",
+              "pitch": 38,
+              "start": 11.018,
+              "duration": 0.18,
+              "velocity": 0.78
+            },
+            {
+              "id": "note-3-2-12",
+              "pitch": 36,
+              "start": 12.0,
+              "duration": 0.2,
+              "velocity": 0.88
+            },
+            {
+              "id": "note-3-2-13",
+              "pitch": 38,
+              "start": 13.012,
+              "duration": 0.18,
+              "velocity": 0.73
+            },
+            {
+              "id": "note-3-2-14",
+              "pitch": 36,
+              "start": 14.5,
+              "duration": 0.2,
+              "velocity": 0.66
+            },
+            {
+              "id": "note-3-2-15",
+              "pitch": 38,
+              "start": 15.018,
+              "duration": 0.18,
+              "velocity": 0.78
+            },
+            {
+              "id": "note-3-2-16",
+              "pitch": 38,
+              "start": 15.75,
+              "duration": 0.12,
+              "velocity": 0.28
+            }
+          ]
+        },
+        {
+          "id": "clip-3-3",
+          "name": "Backbeat",
+          "start": 48.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-3-3-0",
+              "pitch": 36,
+              "start": 0.0,
+              "duration": 0.2,
+              "velocity": 0.88
+            },
+            {
+              "id": "note-3-3-1",
+              "pitch": 38,
+              "start": 1.012,
+              "duration": 0.18,
+              "velocity": 0.73
+            },
+            {
+              "id": "note-3-3-2",
+              "pitch": 36,
+              "start": 2.5,
+              "duration": 0.2,
+              "velocity": 0.66
+            },
+            {
+              "id": "note-3-3-3",
+              "pitch": 38,
+              "start": 3.018,
+              "duration": 0.18,
+              "velocity": 0.78
+            },
+            {
+              "id": "note-3-3-4",
+              "pitch": 36,
+              "start": 4.0,
+              "duration": 0.2,
+              "velocity": 0.88
+            },
+            {
+              "id": "note-3-3-5",
+              "pitch": 38,
+              "start": 5.0120000000000005,
+              "duration": 0.18,
+              "velocity": 0.73
+            },
+            {
+              "id": "note-3-3-6",
+              "pitch": 36,
+              "start": 6.5,
+              "duration": 0.2,
+              "velocity": 0.66
+            },
+            {
+              "id": "note-3-3-7",
+              "pitch": 38,
+              "start": 7.018,
+              "duration": 0.18,
+              "velocity": 0.78
+            },
+            {
+              "id": "note-3-3-8",
+              "pitch": 36,
+              "start": 8.0,
+              "duration": 0.2,
+              "velocity": 0.88
+            },
+            {
+              "id": "note-3-3-9",
+              "pitch": 38,
+              "start": 9.012,
+              "duration": 0.18,
+              "velocity": 0.73
+            },
+            {
+              "id": "note-3-3-10",
+              "pitch": 36,
+              "start": 10.5,
+              "duration": 0.2,
+              "velocity": 0.66
+            },
+            {
+              "id": "note-3-3-11",
+              "pitch": 38,
+              "start": 11.018,
+              "duration": 0.18,
+              "velocity": 0.78
+            },
+            {
+              "id": "note-3-3-12",
+              "pitch": 36,
+              "start": 12.0,
+              "duration": 0.2,
+              "velocity": 0.88
+            },
+            {
+              "id": "note-3-3-13",
+              "pitch": 38,
+              "start": 13.012,
+              "duration": 0.18,
+              "velocity": 0.73
+            },
+            {
+              "id": "note-3-3-14",
+              "pitch": 36,
+              "start": 14.5,
+              "duration": 0.2,
+              "velocity": 0.66
+            },
+            {
+              "id": "note-3-3-15",
+              "pitch": 38,
+              "start": 15.018,
+              "duration": 0.18,
+              "velocity": 0.78
+            },
+            {
+              "id": "note-3-3-16",
+              "pitch": 38,
+              "start": 15.75,
+              "duration": 0.12,
+              "velocity": 0.28
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "track-4",
+      "name": "Dust hats",
+      "color": [
+        161,
+        191,
+        121
+      ],
+      "instrument": "drums",
+      "gain": 0.32,
+      "pan": 0.0,
+      "mute": false,
+      "solo": false,
+      "patch": {
+        "attack": 0.008,
+        "decay": 0.25,
+        "sustain": 0.55,
+        "release": 0.1,
+        "cutoff": 8000.0,
+        "reverb": 0.07,
+        "delay": 0.0
+      },
+      "clips": [
+        {
+          "id": "clip-4-1",
+          "name": "Swung eighths",
+          "start": 16.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-4-1-0",
+              "pitch": 42,
+              "start": 0.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-1",
+              "pitch": 42,
+              "start": 0.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-2",
+              "pitch": 42,
+              "start": 1.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-3",
+              "pitch": 42,
+              "start": 1.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-4",
+              "pitch": 42,
+              "start": 2.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-5",
+              "pitch": 42,
+              "start": 2.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-6",
+              "pitch": 42,
+              "start": 3.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-7",
+              "pitch": 42,
+              "start": 3.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-8",
+              "pitch": 42,
+              "start": 4.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-9",
+              "pitch": 42,
+              "start": 4.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-10",
+              "pitch": 42,
+              "start": 5.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-11",
+              "pitch": 42,
+              "start": 5.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-12",
+              "pitch": 42,
+              "start": 6.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-13",
+              "pitch": 42,
+              "start": 6.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-14",
+              "pitch": 42,
+              "start": 7.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-15",
+              "pitch": 46,
+              "start": 7.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-16",
+              "pitch": 42,
+              "start": 8.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-17",
+              "pitch": 42,
+              "start": 8.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-18",
+              "pitch": 42,
+              "start": 9.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-19",
+              "pitch": 42,
+              "start": 9.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-20",
+              "pitch": 42,
+              "start": 10.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-21",
+              "pitch": 42,
+              "start": 10.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-22",
+              "pitch": 42,
+              "start": 11.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-23",
+              "pitch": 42,
+              "start": 11.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-24",
+              "pitch": 42,
+              "start": 12.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-25",
+              "pitch": 42,
+              "start": 12.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-26",
+              "pitch": 42,
+              "start": 13.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-27",
+              "pitch": 42,
+              "start": 13.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-28",
+              "pitch": 42,
+              "start": 14.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-29",
+              "pitch": 42,
+              "start": 14.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-1-30",
+              "pitch": 42,
+              "start": 15.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-1-31",
+              "pitch": 46,
+              "start": 15.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            }
+          ]
+        },
+        {
+          "id": "clip-4-2",
+          "name": "Swung eighths",
+          "start": 32.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-4-2-0",
+              "pitch": 42,
+              "start": 0.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-1",
+              "pitch": 42,
+              "start": 0.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-2",
+              "pitch": 42,
+              "start": 1.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-3",
+              "pitch": 42,
+              "start": 1.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-4",
+              "pitch": 42,
+              "start": 2.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-5",
+              "pitch": 42,
+              "start": 2.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-6",
+              "pitch": 42,
+              "start": 3.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-7",
+              "pitch": 42,
+              "start": 3.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-8",
+              "pitch": 42,
+              "start": 4.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-9",
+              "pitch": 42,
+              "start": 4.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-10",
+              "pitch": 42,
+              "start": 5.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-11",
+              "pitch": 42,
+              "start": 5.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-12",
+              "pitch": 42,
+              "start": 6.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-13",
+              "pitch": 42,
+              "start": 6.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-14",
+              "pitch": 42,
+              "start": 7.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-15",
+              "pitch": 46,
+              "start": 7.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-16",
+              "pitch": 42,
+              "start": 8.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-17",
+              "pitch": 42,
+              "start": 8.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-18",
+              "pitch": 42,
+              "start": 9.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-19",
+              "pitch": 42,
+              "start": 9.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-20",
+              "pitch": 42,
+              "start": 10.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-21",
+              "pitch": 42,
+              "start": 10.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-22",
+              "pitch": 42,
+              "start": 11.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-23",
+              "pitch": 42,
+              "start": 11.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-24",
+              "pitch": 42,
+              "start": 12.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-25",
+              "pitch": 42,
+              "start": 12.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-26",
+              "pitch": 42,
+              "start": 13.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-27",
+              "pitch": 42,
+              "start": 13.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-28",
+              "pitch": 42,
+              "start": 14.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-29",
+              "pitch": 42,
+              "start": 14.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-2-30",
+              "pitch": 42,
+              "start": 15.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-2-31",
+              "pitch": 46,
+              "start": 15.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            }
+          ]
+        },
+        {
+          "id": "clip-4-3",
+          "name": "Swung eighths",
+          "start": 48.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-4-3-0",
+              "pitch": 42,
+              "start": 0.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-1",
+              "pitch": 42,
+              "start": 0.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-2",
+              "pitch": 42,
+              "start": 1.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-3",
+              "pitch": 42,
+              "start": 1.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-4",
+              "pitch": 42,
+              "start": 2.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-5",
+              "pitch": 42,
+              "start": 2.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-6",
+              "pitch": 42,
+              "start": 3.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-7",
+              "pitch": 42,
+              "start": 3.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-8",
+              "pitch": 42,
+              "start": 4.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-9",
+              "pitch": 42,
+              "start": 4.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-10",
+              "pitch": 42,
+              "start": 5.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-11",
+              "pitch": 42,
+              "start": 5.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-12",
+              "pitch": 42,
+              "start": 6.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-13",
+              "pitch": 42,
+              "start": 6.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-14",
+              "pitch": 42,
+              "start": 7.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-15",
+              "pitch": 46,
+              "start": 7.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-16",
+              "pitch": 42,
+              "start": 8.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-17",
+              "pitch": 42,
+              "start": 8.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-18",
+              "pitch": 42,
+              "start": 9.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-19",
+              "pitch": 42,
+              "start": 9.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-20",
+              "pitch": 42,
+              "start": 10.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-21",
+              "pitch": 42,
+              "start": 10.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-22",
+              "pitch": 42,
+              "start": 11.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-23",
+              "pitch": 42,
+              "start": 11.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-24",
+              "pitch": 42,
+              "start": 12.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-25",
+              "pitch": 42,
+              "start": 12.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-26",
+              "pitch": 42,
+              "start": 13.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-27",
+              "pitch": 42,
+              "start": 13.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-28",
+              "pitch": 42,
+              "start": 14.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-29",
+              "pitch": 42,
+              "start": 14.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            },
+            {
+              "id": "note-4-3-30",
+              "pitch": 42,
+              "start": 15.0,
+              "duration": 0.12,
+              "velocity": 0.56
+            },
+            {
+              "id": "note-4-3-31",
+              "pitch": 46,
+              "start": 15.545,
+              "duration": 0.12,
+              "velocity": 0.31
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "track-5",
+      "name": "Glass notes",
+      "color": [
+        209,
+        124,
+        154
+      ],
+      "instrument": "lead",
+      "gain": 0.35,
+      "pan": 0.22,
+      "mute": false,
+      "solo": false,
+      "patch": {
+        "attack": 0.008,
+        "decay": 0.25,
+        "sustain": 0.55,
+        "release": 0.35,
+        "cutoff": 5800.0,
+        "reverb": 0.3,
+        "delay": 0.28
+      },
+      "clips": [
+        {
+          "id": "clip-5-2",
+          "name": "Answer phrase",
+          "start": 32.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-5-2-0",
+              "pitch": 74,
+              "start": 0.5,
+              "duration": 0.68,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-5-2-1",
+              "pitch": 77,
+              "start": 1.5,
+              "duration": 0.68,
+              "velocity": 0.515
+            },
+            {
+              "id": "note-5-2-2",
+              "pitch": 76,
+              "start": 2.5,
+              "duration": 0.68,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-5-2-3",
+              "pitch": 74,
+              "start": 4.5,
+              "duration": 0.68,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-5-2-4",
+              "pitch": 72,
+              "start": 5.5,
+              "duration": 0.68,
+              "velocity": 0.515
+            },
+            {
+              "id": "note-5-2-5",
+              "pitch": 69,
+              "start": 6.5,
+              "duration": 0.68,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-5-2-6",
+              "pitch": 72,
+              "start": 8.5,
+              "duration": 0.68,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-5-2-7",
+              "pitch": 76,
+              "start": 9.5,
+              "duration": 0.68,
+              "velocity": 0.515
+            },
+            {
+              "id": "note-5-2-8",
+              "pitch": 77,
+              "start": 10.5,
+              "duration": 0.68,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-5-2-9",
+              "pitch": 74,
+              "start": 12.5,
+              "duration": 0.68,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-5-2-10",
+              "pitch": 71,
+              "start": 13.5,
+              "duration": 0.68,
+              "velocity": 0.515
+            },
+            {
+              "id": "note-5-2-11",
+              "pitch": 69,
+              "start": 14.5,
+              "duration": 0.68,
+              "velocity": 0.55
+            }
+          ]
+        },
+        {
+          "id": "clip-5-3",
+          "name": "Answer phrase",
+          "start": 48.0,
+          "length": 16.0,
+          "notes": [
+            {
+              "id": "note-5-3-0",
+              "pitch": 74,
+              "start": 0.5,
+              "duration": 0.68,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-5-3-1",
+              "pitch": 77,
+              "start": 1.5,
+              "duration": 0.68,
+              "velocity": 0.515
+            },
+            {
+              "id": "note-5-3-2",
+              "pitch": 76,
+              "start": 2.5,
+              "duration": 0.68,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-5-3-3",
+              "pitch": 74,
+              "start": 4.5,
+              "duration": 0.68,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-5-3-4",
+              "pitch": 72,
+              "start": 5.5,
+              "duration": 0.68,
+              "velocity": 0.515
+            },
+            {
+              "id": "note-5-3-5",
+              "pitch": 69,
+              "start": 6.5,
+              "duration": 0.68,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-5-3-6",
+              "pitch": 72,
+              "start": 8.5,
+              "duration": 0.68,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-5-3-7",
+              "pitch": 76,
+              "start": 9.5,
+              "duration": 0.68,
+              "velocity": 0.515
+            },
+            {
+              "id": "note-5-3-8",
+              "pitch": 77,
+              "start": 10.5,
+              "duration": 0.68,
+              "velocity": 0.55
+            },
+            {
+              "id": "note-5-3-9",
+              "pitch": 74,
+              "start": 12.5,
+              "duration": 0.68,
+              "velocity": 0.48
+            },
+            {
+              "id": "note-5-3-10",
+              "pitch": 71,
+              "start": 13.5,
+              "duration": 0.68,
+              "velocity": 0.515
+            },
+            {
+              "id": "note-5-3-11",
+              "pitch": 69,
+              "start": 14.5,
+              "duration": 0.68,
+              "velocity": 0.55
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "sections": [
+    {
+      "name": "INTRO",
+      "start_bar": 0,
+      "length_bars": 4
+    },
+    {
+      "name": "POCKET",
+      "start_bar": 4,
+      "length_bars": 4
+    },
+    {
+      "name": "LIFT",
+      "start_bar": 8,
+      "length_bars": 4
+    },
+    {
+      "name": "AFTERGLOW",
+      "start_bar": 12,
+      "length_bars": 4
+    }
+  ]
+}
