@@ -17,7 +17,7 @@ pub fn theme(ctx: &egui::Context) {
     style.visuals.extreme_bg_color = Color32::from_rgb(17, 19, 22);
     style.visuals.override_text_color = Some(TEXT);
     style.visuals.selection.bg_fill = Color32::from_rgb(79, 96, 56);
-    style.visuals.selection.stroke = Stroke::new(1.0, ACCENT);
+    style.visuals.selection.stroke = Stroke::new(1.0_f32, ACCENT);
     style.visuals.widgets.inactive.bg_fill = Color32::from_rgb(39, 42, 48);
     style.visuals.widgets.inactive.weak_bg_fill = Color32::from_rgb(35, 38, 44);
     style.visuals.widgets.hovered.bg_fill = Color32::from_rgb(58, 64, 70);
@@ -396,7 +396,7 @@ impl Studio {
                             let x = origin.x + header + bar as f32 * bar_width;
                             painter.line_segment(
                                 [Pos2::new(x, origin.y + 27.0), Pos2::new(x, rect.bottom())],
-                                Stroke::new(1.0, LINE),
+                                Stroke::new(1.0_f32, LINE),
                             );
                             if bar < self.project.length_bars {
                                 painter.text(
@@ -420,7 +420,7 @@ impl Studio {
                             }
                             painter.line_segment(
                                 [row.left_bottom(), row.right_bottom()],
-                                Stroke::new(1.0, LINE),
+                                Stroke::new(1.0_f32, LINE),
                             );
                             let c = color(track.color);
                             painter.rect_filled(
@@ -501,7 +501,7 @@ impl Studio {
                                     painter.rect_stroke(
                                         r,
                                         4.0,
-                                        Stroke::new(1.5, c),
+                                        Stroke::new(1.5_f32, c),
                                         StrokeKind::Inside,
                                     );
                                 }
@@ -599,7 +599,7 @@ impl Studio {
                             let x = origin.x + header + self.position() as f32 * beat_width;
                             painter.line_segment(
                                 [Pos2::new(x, origin.y + 25.0), Pos2::new(x, rect.bottom())],
-                                Stroke::new(1.5, ACCENT),
+                                Stroke::new(1.5_f32, ACCENT),
                             );
                         }
                         if self.project.tracks.is_empty() {
@@ -753,7 +753,7 @@ impl Studio {
             for step in 0..=(clip.length/self.grid)as usize{
                 let x=origin.x+key+step as f32*self.grid as f32*beat;
                 let major=(step as f64*self.grid)%4.0<0.01;
-                painter.line_segment([Pos2::new(x,rect.top()),Pos2::new(x,rect.bottom())],Stroke::new(1.0,if major{Color32::from_rgb(76,81,88)}else{LINE}));
+                painter.line_segment([Pos2::new(x,rect.top()),Pos2::new(x,rect.bottom())],Stroke::new(1.0_f32,if major{Color32::from_rgb(76,81,88)}else{LINE}));
             }
             let mut hit=false;
             for (i,n)in clip.notes.iter().enumerate(){
@@ -767,7 +767,7 @@ impl Studio {
                 if res.drag_stopped()&& let Some((index,mut original,drag_origin))=self.note_drag.take(){let delta=ui.input(|i|i.pointer.latest_pos()).unwrap_or(drag_origin)-drag_origin;let dx=delta.x as f64/beat as f64;original.start=((original.start+dx)/self.grid).round()*self.grid;original.start=original.start.clamp(0.0,(clip.length-original.duration).max(0.0));original.pitch=(original.pitch as i16-(delta.y/row).round()as i16).clamp(0,127)as u8;move_note=Some((index,original));}
             }
             if response.clicked()&&!hit&& let Some(p)=response.interact_pointer_pos()&& p.x>=origin.x+key&&p.x<origin.x+width{let start=(((p.x-origin.x-key)/beat)as f64/self.grid).floor()*self.grid;let pitch=hi.saturating_sub(((p.y-origin.y)/row)as u8);add=Some(Note{id:dawwny_core::new_id(),pitch,start,duration:self.note_length.min(clip.length-start),velocity:self.note_velocity});}
-            if self.playing(){let pos=self.position()-clip.start;if pos>=0.0&&pos<clip.length{let x=origin.x+key+pos as f32*beat;painter.line_segment([Pos2::new(x,rect.top()),Pos2::new(x,rect.bottom())],Stroke::new(1.5,ACCENT));}}
+            if self.playing(){let pos=self.position()-clip.start;if pos>=0.0&&pos<clip.length{let x=origin.x+key+pos as f32*beat;painter.line_segment([Pos2::new(x,rect.top()),Pos2::new(x,rect.bottom())],Stroke::new(1.5_f32,ACCENT));}}
         });
         if let Some(n) = add {
             self.edit(|p| p.tracks[ti].clips[ci].notes.push(n));
