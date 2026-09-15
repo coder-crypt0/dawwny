@@ -42,6 +42,8 @@ pub struct Studio {
     pub clip_drag: Option<(usize, usize, f64, egui::Pos2)>,
     pub note_drag: Option<(usize, Note, egui::Pos2)>,
     pub last_external_revision: Option<u64>,
+    #[cfg(feature = "capture")]
+    capture_frame: u32,
 }
 
 impl Studio {
@@ -91,6 +93,8 @@ impl Studio {
             clip_drag: None,
             note_drag: None,
             last_external_revision: None,
+            #[cfg(feature = "capture")]
+            capture_frame: 0,
         })
     }
 
@@ -520,6 +524,40 @@ impl Studio {
 impl eframe::App for Studio {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.housekeeping(ctx);
+        #[cfg(feature = "capture")]
+        if let Ok(path) = std::env::var("DAWWNY_SCREENSHOT_PATH") {
+            self.capture_frame += 1;
+            ctx.request_repaint_after(Duration::from_millis(50));
+            if self.capture_frame == 20 {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot(egui::UserData::default()));
+            }
+            let capture = ctx.input(|i| {
+                i.events.iter().find_map(|event| {
+                    if let egui::Event::Screenshot { image, .. } = event {
+                        Some(image.clone())
+                    } else {
+                        None
+                    }
+                })
+            });
+            if let Some(capture) = capture {
+                let bytes: Vec<u8> = capture
+                    .pixels
+                    .iter()
+                    .flat_map(|color| color.to_array())
+                    .collect();
+                match image::save_buffer(
+                    path,
+                    &bytes,
+                    capture.size[0] as u32,
+                    capture.size[1] as u32,
+                    image::ColorType::Rgba8,
+                ) {
+                    Ok(()) => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
+                    Err(e) => self.fail(format!("Screenshot failed: {e}")),
+                }
+            }
+        }
         if ctx.input(|i| i.viewport().close_requested()) {
             if self.export_job.is_some() {
                 ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);

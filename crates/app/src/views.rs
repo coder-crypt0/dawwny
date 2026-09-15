@@ -680,6 +680,7 @@ impl Studio {
             return;
         };
         let tint = color(track.color);
+        let mut delete_clip = false;
         ui.horizontal(|ui| {
             ui.label(egui::RichText::new(&clip.name).strong());
             caption(ui, &format!("{} notes", clip.notes.len()));
@@ -709,12 +710,17 @@ impl Studio {
                 self.duplicate_clip();
             }
             if ui.button("Delete clip").clicked() {
-                self.edit(|p| {
-                    p.tracks[ti].clips.remove(ci);
-                });
-                self.clamp_selection();
+                delete_clip = true;
             }
         });
+        if delete_clip {
+            self.edit(|p| {
+                p.tracks[ti].clips.remove(ci);
+            });
+            self.clamp_selection();
+            self.note_drag = None;
+            return;
+        }
         let lo = clip
             .notes
             .iter()

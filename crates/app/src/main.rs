@@ -27,7 +27,7 @@ fn main() -> anyhow::Result<()> {
             }
             "--help" | "-h" => {
                 println!(
-                    "dawwny [--project FILE] [--no-audio]\nNative studio. The local MCP server can open the same project file."
+                    "dawwny [--project FILE] [--no-audio] [--view piano|sound|mixer]\nNative studio. The local MCP server can open the same project file."
                 );
                 return Ok(());
             }

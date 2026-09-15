@@ -8,6 +8,8 @@ Compose in a native arrangement editor or connect your own AI through MCP. Both 
 
 **v0.1 is a working native prototype for MIDI composition.** It is not yet a full replacement for Logic Pro or another production DAW. Native plugins, recording, audio tracks, automation, and remote access are on the roadmap.
 
+![The native arrangement and piano roll](docs/images/studio.png)
+
 ## What works
 
 | Studio | Agent control | Audio |
@@ -80,6 +82,8 @@ cargo run --release -p dawwny-audio --example render -- exports/velvet-dawn.wav
 ```
 
 Tests cover validation, atomic edits, concurrent writers, MIDI round trips, audible DSP controls, bounded rendering memory, callback allocations, WAV data, GUI state/undo/conflicts, and a real MCP client/server exchange.
+
+For a separate process check after building, run `python scripts/smoke-mcp.py`. Native UI captures use the optional `capture` feature and `DAWWNY_SCREENSHOT_PATH`; that feature is excluded from normal builds. The screenshots above use `--no-audio` for repeatable capture.
 
 No hosting is configured. Future remote control will use Hostinger when that part of the project is implemented. Native VST3 support will require a separate crash-isolated plugin host; this build does not scan or load installed plugin binaries.
 

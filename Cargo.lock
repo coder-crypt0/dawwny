@@ -848,6 +848,7 @@ dependencies = [
  "dawwny-audio",
  "dawwny-core",
  "eframe",
+ "image",
  "rfd",
  "serde_json",
  "tempfile",
