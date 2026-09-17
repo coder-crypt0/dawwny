@@ -14,6 +14,8 @@ Run `cargo run -p dawwny-app`, or open the release `dawwny.exe`. A new session s
 
 Edits autosave after a short debounce. Undo/redo retain up to 32 edit groups in memory. The audio plan is immutable during a playback run: saving a sound or note edit restarts playback from the beginning. Continuous live graph replacement and seeking are later transport improvements.
 
+![Native synthesizer controls](images/sound.png)
+
 ## Files and export
 
 **Project → Open** accepts a dawwny JSON session or a MIDI file. Imported MIDI becomes a new local session; the original file is preserved. **Save a copy** lets you choose a destination. **New session** and **Open demo** create separate files.
