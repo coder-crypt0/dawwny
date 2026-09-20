@@ -2,6 +2,8 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 mod commands;
+mod factory;
+pub use factory::{SOUND_CATEGORIES, SoundInfo, sound_catalog, sound_preset};
 mod demo;
 mod midi;
 mod sound;

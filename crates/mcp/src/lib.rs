@@ -6,6 +6,23 @@ use std::{path::PathBuf, sync::Arc};
 
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
+pub struct ListSoundsArgs {
+    /// Search name, family, category and tags. Maximum 128 bytes.
+    pub query: Option<String>,
+    pub category: Option<String>,
+    /// Zero-based pagination offset.
+    pub offset: Option<usize>,
+    /// Page size, 1–100. Defaults to 24.
+    pub limit: Option<usize>,
+}
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct GetSoundArgs {
+    pub preset_id: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct ApplyCommandsArgs {
     /// Revision returned by read_project. Stale transactions are rejected atomically.
     pub expected_revision: u64,
@@ -59,16 +76,55 @@ impl DawwnyMcp {
 #[tool_router(server_handler)]
 impl DawwnyMcp {
     #[tool(
-        description = "Discover the Dawn custom synthesizer and six stock sound presets, including complete editable patch settings. Apply a preset with apply_sound_preset, or edit its patch with update_track. Set instrument to synth to enable oscillators, sub/noise, resonant filter and LFO. Every instrument supports the ordered eight-slot effects rack: reverb, tempo echo, chorus, drive, three-band EQ and compressor. No third-party plugin binaries are required."
+        description = "Search and page through 2310 Dawn presets across 12 categories. Returns lightweight metadata, not every patch. Use get_sound for complete settings, then apply_sound_preset to load one on a track. Search terms match name, category, family and tags. Returns total matches and next_offset; maximum page size 100."
     )]
-    async fn list_sounds(&self) -> Result<String, String> {
-        serde_json::to_string(&serde_json::json!({
-            "instrument": "synth",
-            "presets": dawwny_core::sound_presets(),
-            "effects": ["reverb", "echo", "chorus", "drive", "equalizer", "compressor"],
-            "signal_flow": "voice -> envelope/filter -> track gain/pan and legacy ambience -> ordered effect slots -> master limiter",
-            "limits": {"effect_slots_per_track": 8, "effect_buffers_mib_per_session": 64, "rack_tail_seconds": 30}
-        })).map_err(|e| e.to_string())
+    async fn list_sounds(
+        &self,
+        Parameters(args): Parameters<ListSoundsArgs>,
+    ) -> Result<String, String> {
+        let query = args.query.unwrap_or_default().to_lowercase();
+        let category = args.category.unwrap_or_default();
+        if query.len() > 128 || category.len() > 64 {
+            return Err("Sound search is too long".into());
+        }
+        let limit = args.limit.unwrap_or(24);
+        if !(1..=100).contains(&limit) {
+            return Err("limit must be 1–100".into());
+        }
+        let offset = args.offset.unwrap_or(0);
+        let terms: Vec<_> = query.split_whitespace().collect();
+        let matches: Vec<_> = dawwny_core::sound_catalog()
+            .iter()
+            .filter(|s| {
+                if !category.is_empty() && !s.category.eq_ignore_ascii_case(&category) {
+                    return false;
+                }
+                let text = format!(
+                    "{} {} {} {}",
+                    s.name,
+                    s.category,
+                    s.family,
+                    s.tags.join(" ")
+                )
+                .to_lowercase();
+                terms.iter().all(|term| text.contains(term))
+            })
+            .collect();
+        let total = matches.len();
+        let sounds: Vec<_> = matches.into_iter().skip(offset).take(limit).collect();
+        let next = offset.saturating_add(sounds.len());
+        serde_json::to_string(&serde_json::json!({"sounds":sounds,"total":total,"offset":offset,"next_offset":if next<total{Some(next)}else{None},"categories":dawwny_core::SOUND_CATEGORIES})).map_err(|e|e.to_string())
+    }
+    #[tool(
+        description = "Get one Dawn preset's complete editable SynthPatch by its stable preset_id from list_sounds. Copy and modify these settings through update_track with instrument synth. Effects work on all instruments. Loading a preset preserves track notes and mix. Presets are synthesized; no sample libraries are downloaded."
+    )]
+    async fn get_sound(
+        &self,
+        Parameters(args): Parameters<GetSoundArgs>,
+    ) -> Result<String, String> {
+        let preset = dawwny_core::sound_preset(&args.preset_id)
+            .ok_or("Unknown preset_id; search list_sounds first")?;
+        serde_json::to_string(&preset).map_err(|e| e.to_string())
     }
     #[tool(
         description = "Read the complete dawwny musical project and current revision. Read this before editing. Beat positions use quarter notes; clip note starts are relative to their clip. No AI model is bundled."

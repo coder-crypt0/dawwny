@@ -51,9 +51,9 @@ def main():
                                 "clientInfo": {"name": "dawwny-smoke", "version": "0.1.0"}})
             send("notifications/initialized", notification=True)
             tools = send("tools/list")["tools"]
-            assert {t["name"] for t in tools} == {"read_project", "apply_commands", "export_midi", "render_wav", "list_sounds"}
+            assert {t["name"] for t in tools} == {"read_project", "apply_commands", "export_midi", "render_wav", "list_sounds", "get_sound"}
             sounds = send("tools/call", {"name": "list_sounds", "arguments": {}})
-            assert len(json.loads(sounds["content"][0]["text"])["presets"]) == 6
+            assert json.loads(sounds["content"][0]["text"])["total"] == 2310
             project = send("tools/call", {"name": "read_project", "arguments": {}})
             project = json.loads(project["content"][0]["text"])
             assert project["revision"] == 0 and len(project["tracks"]) == 6

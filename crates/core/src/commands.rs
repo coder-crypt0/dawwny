@@ -30,9 +30,7 @@ pub fn apply_commands(p: &Project, commands: &[Command]) -> Result<Project> {
                 track_id,
                 preset_id,
             } => {
-                let preset = sound_presets()
-                    .into_iter()
-                    .find(|p| &p.id == preset_id)
+                let preset = sound_preset(preset_id)
                     .context("Unknown sound preset; use list_sounds to discover available IDs")?;
                 let track = track_mut(&mut n, track_id)?;
                 track.instrument = Instrument::Synth;
