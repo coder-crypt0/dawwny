@@ -41,6 +41,7 @@ pub fn theme(ctx: &egui::Context) {
 }
 pub fn instrument_name(i: Instrument) -> &'static str {
     match i {
+        Instrument::Synth => "Dawn synth",
         Instrument::Keys => "Keys",
         Instrument::Pad => "Pad",
         Instrument::Bass => "Bass",
@@ -320,6 +321,7 @@ impl Studio {
                     ui.add_space(12.0);
                     ui.menu_button("+ Track", |ui| {
                         for inst in [
+                            Instrument::Synth,
                             Instrument::Keys,
                             Instrument::Pad,
                             Instrument::Bass,
@@ -795,67 +797,11 @@ impl Studio {
             return;
         };
         let before = track.clone();
-        egui::ScrollArea::vertical().show(ui, |ui| {
-            ui.horizontal(|ui| {
-                ui.label(
-                    egui::RichText::new("DAWN / SYNTH")
-                        .size(22.0)
-                        .color(color(track.color))
-                        .strong(),
-                );
-                ui.separator();
-                egui::ComboBox::from_id_salt("instrument")
-                    .selected_text(instrument_name(track.instrument))
-                    .show_ui(ui, |ui| {
-                        for inst in [
-                            Instrument::Keys,
-                            Instrument::Pad,
-                            Instrument::Bass,
-                            Instrument::Lead,
-                            Instrument::Drums,
-                        ] {
-                            ui.selectable_value(&mut track.instrument, inst, instrument_name(inst));
-                        }
-                    });
-                ui.add(egui::TextEdit::singleline(&mut track.name).desired_width(160.0));
+        egui::ScrollArea::vertical()
+            .id_salt(("sound", &track.id))
+            .show(ui, |ui| {
+                crate::sound_editor::show(ui, &mut track);
             });
-            ui.add_space(12.0);
-            ui.columns(3, |cols| {
-                caption(&mut cols[0], "AMPLITUDE ENVELOPE");
-                cols[0].add(
-                    egui::Slider::new(&mut track.patch.attack, 0.001..=2.0)
-                        .logarithmic(true)
-                        .text("Attack / s"),
-                );
-                cols[0].add(
-                    egui::Slider::new(&mut track.patch.decay, 0.001..=2.0)
-                        .logarithmic(true)
-                        .text("Decay / s"),
-                );
-                cols[0].add(egui::Slider::new(&mut track.patch.sustain, 0.0..=1.0).text("Sustain"));
-                cols[0].add(
-                    egui::Slider::new(&mut track.patch.release, 0.01..=5.0)
-                        .logarithmic(true)
-                        .text("Release / s"),
-                );
-                caption(&mut cols[1], "TONE & SPACE");
-                cols[1].add(
-                    egui::Slider::new(&mut track.patch.cutoff, 80.0..=18000.0)
-                        .logarithmic(true)
-                        .text("Cutoff / Hz"),
-                );
-                cols[1].add(egui::Slider::new(&mut track.patch.reverb, 0.0..=1.0).text("Reverb"));
-                cols[1].add(egui::Slider::new(&mut track.patch.delay, 0.0..=1.0).text("Delay"));
-                caption(&mut cols[2], "CHANNEL");
-                cols[2].add(egui::Slider::new(&mut track.gain, 0.0..=1.0).text("Gain"));
-                cols[2].add(egui::Slider::new(&mut track.pan, -1.0..=1.0).text("Pan"));
-                cols[2].horizontal(|ui| {
-                    ui.toggle_value(&mut track.mute, "Mute");
-                    ui.toggle_value(&mut track.solo, "Solo");
-                });
-                caption(&mut cols[2], "Sound edits restart playback when saved.");
-            });
-        });
         if track != before {
             self.edit(|p| p.tracks[ti] = track);
         }

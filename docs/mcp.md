@@ -17,6 +17,7 @@ filesystem paths.
 
 ## Tools
 
+- `list_sounds` discovers Dawn synth presets and the stock effects rack. [Sound workflow](sound-design.md).
 - `read_project` returns the complete project document and its revision.
 - `apply_commands` applies a list of typed musical commands only when
   `expected_revision` equals the stored revision. A stale request fails with a
