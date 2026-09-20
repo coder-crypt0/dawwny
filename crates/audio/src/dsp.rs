@@ -1,3 +1,7 @@
+use crate::{
+    fx::{Rack, storage_bytes, tail_seconds},
+    synth::{CompiledSynth, SynthVoice},
+};
 use anyhow::{Result, ensure};
 use dawwny_core::{Instrument, Project, validate};
 use std::{
@@ -27,6 +31,8 @@ struct Channel {
     filter: f32,
     reverb: f32,
     delay: f32,
+    synth: CompiledSynth,
+    rack: [Option<dawwny_core::EffectSlot>; 8],
 }
 #[derive(Clone, Debug)]
 pub struct RenderPlan {
@@ -68,6 +74,7 @@ pub fn compile(project: &Project, sample_rate: u32) -> Result<RenderPlan> {
     let mut events = vec![];
     let mut tail = 0.05f32;
     let solo = project.tracks.iter().any(|t| t.solo);
+    let mut effect_storage = 0;
     for track in &project.tracks {
         if track.mute || (solo && !track.solo) {
             continue;
@@ -75,6 +82,17 @@ pub fn compile(project: &Project, sample_rate: u32) -> Result<RenderPlan> {
         let index = tracks.len();
         let patch = &track.patch;
         let angle = (track.pan + 1.0) * FRAC_PI_4;
+        effect_storage += storage_bytes(&patch.effects, sample_rate, project.tempo);
+        if patch.delay > 0.0 {
+            effect_storage += (sample_rate as f64 * 60.0 / project.tempo * 0.75) as usize * 4;
+        }
+        if patch.reverb > 0.0 {
+            effect_storage += (sample_rate as f32 * 0.16) as usize * 4;
+        }
+        ensure!(
+            effect_storage <= 64 * 1024 * 1024,
+            "Effect delay buffers exceed the 64 MiB session budget at this sample rate. Bypass slots or shorten echoes."
+        );
         tracks.push(Channel {
             instrument: track.instrument,
             gain: track.gain,
@@ -87,9 +105,12 @@ pub fn compile(project: &Project, sample_rate: u32) -> Result<RenderPlan> {
                 - (-TAU * patch.cutoff.min(sample_rate as f32 * 0.45) / sample_rate as f32).exp(),
             reverb: patch.reverb,
             delay: patch.delay,
+            synth: CompiledSynth::new(&patch.synth, patch.cutoff, sample_rate),
+            rack: std::array::from_fn(|i| patch.effects.get(i).copied()),
         });
         tail = tail.max(
             patch.release
+                + tail_seconds(&patch.effects, project.tempo)
                 + if patch.reverb > 0.0 || patch.delay > 0.0 {
                     3.0
                 } else {
@@ -139,6 +160,7 @@ struct Voice {
     filtered: f32,
     last_noise: f32,
     random: u32,
+    synth: SynthVoice,
 }
 fn envelope(age: f32, c: &Channel) -> f32 {
     if age < c.attack {
@@ -162,7 +184,15 @@ impl Voice {
             return 0.0;
         }
         let seconds = age / rate;
+        if c.instrument == Instrument::Synth {
+            let output = self
+                .synth
+                .sample(&c.synth, self.increment * rate / TAU, env);
+            self.age += 1;
+            return output * env * self.velocity;
+        }
         let signal = match c.instrument {
+            Instrument::Synth => unreachable!("Dawn synth handled above"),
             Instrument::Keys => {
                 (self.phase.sin() + 0.22 * (self.phase * 2.0).sin() * (-seconds * 3.0).exp())
                     * (-seconds * 0.7).exp()
@@ -246,10 +276,13 @@ impl Comb {
 struct Effects {
     delay: Option<Comb>,
     reverb: Option<[Comb; 4]>,
+    rack: Rack,
 }
 impl Effects {
     fn new(c: &Channel, rate: u32, tempo: f64) -> Self {
+        let slots: Vec<_> = c.rack.iter().flatten().copied().collect();
         Self {
+            rack: Rack::new(&slots, rate, tempo),
             delay: (c.delay > 0.0).then(|| Comb::new((rate as f64 * 60.0 / tempo * 0.75) as usize)),
             reverb: (c.reverb > 0.0).then(|| {
                 [
@@ -269,10 +302,10 @@ impl Effects {
                 wet[i % 2] += comb.process(input, 0.68 - i as f32 * 0.025) * 0.2 * c.reverb;
             }
         }
-        [
+        self.rack.process([
             (input + echo) * c.pan[0] + wet[0],
             (input + echo) * c.pan[1] + wet[1],
-        ]
+        ])
     }
 }
 

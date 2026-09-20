@@ -1,3 +1,4 @@
+mod sound_editor;
 mod studio;
 mod views;
 

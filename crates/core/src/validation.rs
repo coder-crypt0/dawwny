@@ -67,6 +67,7 @@ pub fn validate(p: &Project) -> Result<()> {
         range(t.gain, 0.0, 1.0, "Track gain")?;
         range(t.pan, -1.0, 1.0, "Pan")?;
         let s = &t.patch;
+        crate::sound::validate_sound(s)?;
         range(s.attack, 0.001, 5.0, "Attack")?;
         range(s.decay, 0.001, 5.0, "Decay")?;
         range(s.sustain, 0.0, 1.0, "Sustain")?;

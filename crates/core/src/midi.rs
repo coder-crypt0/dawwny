@@ -47,6 +47,7 @@ pub fn export_midi(project: &Project, path: &Path) -> Result<()> {
             Instrument::Bass => 38,
             Instrument::Lead => 81,
             Instrument::Drums => 0,
+            Instrument::Synth => 81,
         };
         let mut events = vec![];
         for clip in &track.clips {

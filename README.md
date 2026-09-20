@@ -16,7 +16,7 @@ Compose in a native arrangement editor or connect your own AI through MCP. Both 
 | --- | --- | --- |
 | Arrangement and draggable MIDI clips | Local stdio MCP connector | Native device playback |
 | Piano roll: add, move, delete notes | Read the project and revision | Keys, pad, bass, lead, drum synthesis |
-| Instrument and sound editing | Atomic musical command batches | ADSR, filter, reverb, delay |
+| Dawn dual-oscillator synth and sound editing | Atomic musical command batches | Resonant filter, modulation, six stock effects |
 | Track mixer, mute, solo, pan | Stale-edit conflict protection | Sample-clock loop transport |
 | Autosave, open, save copy, undo/redo | Automatic UI refresh after agent edits | Streaming 24-bit WAV export |
 | MIDI import/export | MIDI and WAV export tools | No whole-song PCM buffer |
@@ -54,7 +54,7 @@ Press **Space** to play. Select a clip to open its piano roll. Double-click an e
 
 Edits save locally after a short debounce. A committed edit restarts active playback from the beginning; smooth live graph replacement and seeking are future transport work. MIDI import supports constant-tempo 4/4 note sequences, not another DAW's complete instrument/controller state.
 
-[Studio guide](docs/studio-guide.md) · [Project format](docs/project-format.md) · [Architecture](docs/architecture.md) · [Roadmap](docs/roadmap.md)
+[Studio guide](docs/studio-guide.md) · [Sound design](docs/sound-design.md) · [Project format](docs/project-format.md) · [Architecture](docs/architecture.md) · [Roadmap](docs/roadmap.md)
 
 ## Built to stay small
 

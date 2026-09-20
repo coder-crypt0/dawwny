@@ -31,13 +31,17 @@ async fn mcp_client_edits_the_native_session_and_exports_real_music() -> anyhow:
     });
     let mut client = ().serve(client_io).await?;
     let tools = client.list_all_tools().await?;
-    assert_eq!(tools.len(), 4);
+    assert_eq!(tools.len(), 5);
+    let catalog = client
+        .call_tool(CallToolRequestParams::new("list_sounds"))
+        .await?;
+    assert_eq!(output(&catalog)["presets"].as_array().unwrap().len(), 6);
     let read = client
         .call_tool(CallToolRequestParams::new("read_project"))
         .await?;
     assert_eq!(output(&read)["revision"], 0);
     let apply = CallToolRequestParams::new("apply_commands").with_arguments(
-        json!({"expected_revision":0,"commands":[{"type":"set_tempo","tempo":110.0}]})
+        json!({"expected_revision":0,"commands":[{"type":"set_tempo","tempo":110.0},{"type":"apply_sound_preset","track_id":project.tracks[0].id,"preset_id":"glass_orbit"}]})
             .as_object()
             .unwrap()
             .clone(),
@@ -46,6 +50,10 @@ async fn mcp_client_edits_the_native_session_and_exports_real_music() -> anyhow:
     assert_ne!(result.is_error, Some(true));
     assert_eq!(output(&result)["revision"], 1);
     assert_eq!(store.load()?.tempo, 110.0);
+    assert_eq!(
+        store.load()?.tracks[0].instrument,
+        dawwny_core::Instrument::Synth
+    );
     let conflict = client.call_tool(apply).await?;
     assert_eq!(conflict.is_error, Some(true));
     assert_eq!(store.load()?.revision, 1);

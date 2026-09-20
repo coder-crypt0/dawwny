@@ -128,3 +128,80 @@ fn voice_overload_remains_bounded() {
     }
     assert_eq!(r.stolen_voices(), 12);
 }
+
+#[test]
+fn dawn_controls_change_real_rendered_audio() {
+    let mut p = project();
+    p.tracks[0].instrument = Instrument::Synth;
+    p.tracks[0].clips[0].notes[0].duration = 2.0;
+    p.tracks[0].patch.synth.osc1.waveform = Waveform::Pulse;
+    let original = samples(&p);
+    for parameter in 0..16 {
+        let mut changed = p.clone();
+        let s = &mut changed.tracks[0].patch.synth;
+        match parameter {
+            0 => s.osc1.waveform = Waveform::Triangle,
+            1 => s.osc1.level = 0.1,
+            2 => s.osc1.semitones = 12,
+            3 => s.osc1.detune_cents = 45.0,
+            4 => s.osc1.pulse_width = 0.2,
+            5 => s.osc2.waveform = Waveform::Sine,
+            6 => s.osc2.level = 0.0,
+            7 => s.osc2.semitones = -12,
+            8 => s.osc2.detune_cents = -50.0,
+            9 => s.sub_level = 0.5,
+            10 => s.noise_level = 0.2,
+            11 => s.filter_mode = FilterMode::HighPass,
+            12 => s.resonance = 0.8,
+            13 => s.filter_env = -3.0,
+            14 => {
+                s.lfo_pitch = 1.0;
+                s.lfo_rate = 3.0;
+            }
+            _ => {
+                s.lfo_filter = 2.0;
+                s.lfo_rate = 2.0;
+            }
+        }
+        let changed = samples(&changed);
+        let difference: f32 = original
+            .iter()
+            .zip(&changed)
+            .map(|(a, b)| (a[0] - b[0]).abs())
+            .sum();
+        assert!(
+            difference > 0.01,
+            "disconnected synth parameter {parameter}"
+        );
+        assert!(
+            changed
+                .iter()
+                .flatten()
+                .all(|s| s.is_finite() && s.abs() <= 0.95)
+        );
+    }
+}
+#[test]
+fn extreme_echo_racks_are_rejected_before_large_allocations() {
+    let mut p = project();
+    p.tracks[0].patch.effects = vec![
+        EffectSlot {
+            enabled: true,
+            effect: Effect::Echo {
+                beats: 4.0,
+                feedback: 0.85,
+                damping: 0.5,
+                ping_pong: true,
+                mix: 1.0
+            }
+        };
+        8
+    ];
+    p.tempo = 30.0;
+    let err = compile(&p, 192000).unwrap_err().to_string();
+    assert!(err.contains("64 MiB"));
+    for slot in &mut p.tracks[0].patch.effects {
+        slot.enabled = false;
+    }
+    assert!(compile(&p, 192000).is_ok());
+}

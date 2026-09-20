@@ -59,6 +59,18 @@ impl DawwnyMcp {
 #[tool_router(server_handler)]
 impl DawwnyMcp {
     #[tool(
+        description = "Discover the Dawn custom synthesizer and six stock sound presets, including complete editable patch settings. Apply a preset with apply_sound_preset, or edit its patch with update_track. Set instrument to synth to enable oscillators, sub/noise, resonant filter and LFO. Every instrument supports the ordered eight-slot effects rack: reverb, tempo echo, chorus, drive, three-band EQ and compressor. No third-party plugin binaries are required."
+    )]
+    async fn list_sounds(&self) -> Result<String, String> {
+        serde_json::to_string(&serde_json::json!({
+            "instrument": "synth",
+            "presets": dawwny_core::sound_presets(),
+            "effects": ["reverb", "echo", "chorus", "drive", "equalizer", "compressor"],
+            "signal_flow": "voice -> envelope/filter -> track gain/pan and legacy ambience -> ordered effect slots -> master limiter",
+            "limits": {"effect_slots_per_track": 8, "effect_buffers_mib_per_session": 64, "rack_tail_seconds": 30}
+        })).map_err(|e| e.to_string())
+    }
+    #[tool(
         description = "Read the complete dawwny musical project and current revision. Read this before editing. Beat positions use quarter notes; clip note starts are relative to their clip. No AI model is bundled."
     )]
     async fn read_project(&self) -> Result<String, String> {
@@ -73,7 +85,7 @@ impl DawwnyMcp {
         .map_err(|e| e.to_string())?
     }
     #[tool(
-        description = "Apply 1–256 validated musical commands atomically to the configured local project. Requires the current expected_revision. IDs must be unique. Fixed 4/4, 30–300 BPM, 32 tracks, 128 clips, 32768 notes. All instrument patch settings are active. After a revision conflict read_project again; never blindly retry old changes."
+        description = "Apply 1–256 validated musical commands atomically to the configured local project. Requires the current expected_revision. IDs must be unique. Fixed 4/4, 30–300 BPM, 32 tracks, 128 clips, 32768 notes. Use list_sounds to discover presets. Custom oscillator/filter/LFO settings apply to instrument synth; ordered effects apply to every instrument. update_track replaces the entire patch, so preserve settings you want to keep. After a revision conflict read_project again; never blindly retry old changes."
     )]
     async fn apply_commands(
         &self,
@@ -99,7 +111,7 @@ impl DawwnyMcp {
         self.export(args.expected_revision, false).await
     }
     #[tool(
-        description = "Render the audible mix through the native synth engine to a unique 24-bit stereo WAV at 48 kHz. Applies mute, solo, gain, pan, ADSR, filter, reverb, and delay with a render tail. Streams to disk; one export at a time. Requires current revision. No native VST plugins are hosted in this foundation."
+        description = "Render the audible mix through the native synth engine to a unique 24-bit stereo WAV at 48 kHz. Applies custom synthesis, mute/solo, gain/pan and the ordered stock effect rack. Rack tails are capped at 30 seconds. Streams to disk; one export at a time. Requires current revision. Native VST binaries are not yet hosted."
     )]
     async fn render_wav(&self, Parameters(args): Parameters<ExportArgs>) -> Result<String, String> {
         self.export(args.expected_revision, true).await

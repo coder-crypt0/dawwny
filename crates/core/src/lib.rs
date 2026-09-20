@@ -4,11 +4,15 @@ use serde::{Deserialize, Serialize};
 mod commands;
 mod demo;
 mod midi;
+mod sound;
 mod storage;
 mod validation;
 pub use commands::apply_commands;
 pub use demo::demo_project;
 pub use midi::{export_midi, import_midi};
+pub use sound::{
+    CustomSynth, Effect, EffectSlot, FilterMode, Oscillator, SoundPreset, Waveform, sound_presets,
+};
 pub use storage::{SessionStore, load_project, new_id, save_project};
 pub use validation::validate;
 
@@ -49,6 +53,7 @@ pub enum Instrument {
     Bass,
     Lead,
     Drums,
+    Synth,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
@@ -61,6 +66,10 @@ pub struct SynthPatch {
     pub cutoff: f32,
     pub reverb: f32,
     pub delay: f32,
+    #[serde(default)]
+    pub synth: CustomSynth,
+    #[serde(default)]
+    pub effects: Vec<EffectSlot>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
@@ -112,6 +121,11 @@ pub enum Command {
     RemoveTrack {
         track_id: String,
     },
+    /// Load a stock Dawn synth preset onto a track, preserving its notes and mix.
+    ApplySoundPreset {
+        track_id: String,
+        preset_id: String,
+    },
     UpdateTrack {
         track_id: String,
         name: Option<String>,
@@ -156,6 +170,8 @@ impl Default for SynthPatch {
             cutoff: 8000.0,
             reverb: 0.18,
             delay: 0.0,
+            synth: CustomSynth::default(),
+            effects: Vec::new(),
         }
     }
 }
