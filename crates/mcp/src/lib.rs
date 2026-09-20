@@ -82,11 +82,12 @@ impl DawwnyMcp {
         &self,
         Parameters(args): Parameters<ListSoundsArgs>,
     ) -> Result<String, String> {
-        let query = args.query.unwrap_or_default().to_lowercase();
+        let query = args.query.unwrap_or_default();
         let category = args.category.unwrap_or_default();
         if query.len() > 128 || category.len() > 64 {
             return Err("Sound search is too long".into());
         }
+        let query = query.to_lowercase();
         let limit = args.limit.unwrap_or(24);
         if !(1..=100).contains(&limit) {
             return Err("limit must be 1–100".into());

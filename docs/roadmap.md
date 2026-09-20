@@ -5,7 +5,7 @@ Each milestone is committed, checked, pushed, and merged to the public repositor
 - [x] M0: native Rust workspace, architecture, shared project types, public GitHub repository
 - [x] M1: validated edits and persistence, demo composition, MIDI import/export
 - [x] M2: real native synthesis, transport, effects, streaming WAV export
-- [x] M3: native arrangement, note editing, sound controls, mixer, save/load
+- [x] M3: native arrangement, note properties, synthesizer/effects controls, mixer, save/load, searchable 2,310-entry sound library (72 families × 32 variations + 6 signatures)
 - [x] M4: local MCP tools editing the same session with revision checks
 - [ ] M5: measured release build and integration smoke checks
 

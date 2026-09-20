@@ -1,3 +1,4 @@
+mod library;
 mod sound_editor;
 mod studio;
 mod views;
@@ -8,6 +9,7 @@ fn main() -> anyhow::Result<()> {
     let mut path = PathBuf::from("sessions/untitled.dawwny.json");
     let mut no_audio = false;
     let mut view = studio::EditorTab::Piano;
+    let mut expanded = false;
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -18,6 +20,7 @@ fn main() -> anyhow::Result<()> {
                     .into()
             }
             "--no-audio" => no_audio = true,
+            "--expanded" => expanded = true,
             "--view" => {
                 view = match args.next().as_deref() {
                     Some("piano") => studio::EditorTab::Piano,
@@ -28,7 +31,7 @@ fn main() -> anyhow::Result<()> {
             }
             "--help" | "-h" => {
                 println!(
-                    "dawwny [--project FILE] [--no-audio] [--view piano|sound|mixer]\nNative studio. The local MCP server can open the same project file."
+                    "dawwny [--project FILE] [--no-audio] [--view piano|sound|mixer] [--expanded]\nNative studio. The local MCP server can open the same project file."
                 );
                 return Ok(());
             }
@@ -37,6 +40,7 @@ fn main() -> anyhow::Result<()> {
     }
     let mut studio = studio::Studio::new(path, no_audio)?;
     studio.tab = view;
+    studio.editor_expanded = expanded;
     let options = eframe::NativeOptions {
         viewport: eframe::egui::ViewportBuilder::default()
             .with_inner_size([1440.0, 900.0])

@@ -16,7 +16,7 @@ Compose in a native arrangement editor or connect your own AI through MCP. Both 
 | --- | --- | --- |
 | Arrangement and draggable MIDI clips | Local stdio MCP connector | Native device playback |
 | Piano roll: add, move, delete notes | Read the project and revision | Keys, pad, bass, lead, drum synthesis |
-| Dawn dual-oscillator synth and sound editing | Atomic musical command batches | Resonant filter, modulation, six stock effects |
+| 2,310-sound library: 72 families × 32 variations + 6 signatures | Atomic musical command batches | Dawn dual-oscillator subtractive synthesis |
 | Track mixer, mute, solo, pan | Stale-edit conflict protection | Sample-clock loop transport |
 | Autosave, open, save copy, undo/redo | Automatic UI refresh after agent edits | Streaming 24-bit WAV export |
 | MIDI import/export | MIDI and WAV export tools | No whole-song PCM buffer |
@@ -50,7 +50,7 @@ Use **Agent connection → Copy MCP configuration** to get the correct executabl
 
 ## Make something
 
-Press **Space** to play. Select a clip to open its piano roll. Double-click an empty lane to create a clip, then click in the piano roll to add notes. Drag clips and notes to move them; right-click notes to remove them. Shape the selected instrument in **Sound**, balance tracks in **Mixer**, and export from the top bar.
+Press **Space** to play. Select a clip to open its piano roll. Double-click an empty lane to create a clip, then click in the piano roll to add notes. Drag clips and notes to move them; right-click a note for pitch, length, velocity, and delete controls. Toggle **Sounds** (or press **L**) to search and filter the library, favorite sounds, audition a separate preview, or use a sound on the selected track. See the [studio guide](docs/studio-guide.md) for project controls.
 
 Edits save locally after a short debounce. A committed edit restarts active playback from the beginning; smooth live graph replacement and seeking are future transport work. MIDI import supports constant-tempo 4/4 note sequences, not another DAW's complete instrument/controller state.
 

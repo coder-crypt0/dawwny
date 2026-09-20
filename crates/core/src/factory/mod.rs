@@ -93,6 +93,9 @@ pub fn sound_preset(id: &str) -> Option<SoundPreset> {
     let mut parts = id.strip_prefix("factory.")?.split('.');
     let slug = parts.next()?;
     let number = parts.next()?;
+    if number.len() != 2 || !number.bytes().all(|b| b.is_ascii_digit()) {
+        return None;
+    }
     let index: usize = number.parse().ok()?;
     if index >= 32 || number != format!("{index:02}") || parts.next().is_some() {
         return None;
