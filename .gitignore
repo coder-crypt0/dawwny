@@ -16,3 +16,5 @@ MOONLIGHT.md
 
 
 .dawwny-library.json
+*.dawwny.json.lock
+__pycache__/
