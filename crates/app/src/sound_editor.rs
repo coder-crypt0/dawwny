@@ -65,7 +65,7 @@ pub fn show(ui: &mut egui::Ui, track: &mut Track) {
                 });
             ui.add(egui::TextEdit::singleline(&mut track.name).desired_width(135.0));
             egui::ComboBox::from_id_salt("presets")
-                .selected_text("Load sound…")
+                .selected_text("Signatures…")
                 .show_ui(ui, |ui| {
                     for p in dawwny_core::sound_presets() {
                         if ui.button(&p.name).on_hover_text(&p.description).clicked() {

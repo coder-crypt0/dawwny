@@ -21,8 +21,10 @@ pub struct Studio {
     pub selected_track: usize,
     pub selected_clip: usize,
     pub tab: EditorTab,
+    pub editor_expanded: bool,
     pub looped: bool,
     pub zoom: f32,
+    pub fit_timeline: bool,
     pub piano_zoom: f32,
     pub grid: f64,
     pub note_length: f64,
@@ -30,6 +32,9 @@ pub struct Studio {
     pub status: String,
     pub error: bool,
     pub show_agents: bool,
+    pub show_library: bool,
+    pub library: crate::library::LibraryState,
+    pub preview: Option<AudioEngine>,
     pub show_help: bool,
     pub pending: Option<Project>,
     pub conflict: bool,
@@ -65,6 +70,8 @@ impl Studio {
         let last_modified = std::fs::metadata(store.path())
             .and_then(|m| m.modified())
             .ok();
+        let library =
+            crate::library::LibraryState::new(store.path().with_file_name(".dawwny-library.json"));
         Ok(Self {
             project,
             store,
@@ -72,15 +79,20 @@ impl Studio {
             selected_track: 0,
             selected_clip: 0,
             tab: EditorTab::Piano,
+            editor_expanded: false,
             looped: true,
             zoom: 1.0,
+            fit_timeline: true,
             piano_zoom: 1.0,
             grid: 0.25,
             note_length: 0.5,
             note_velocity: 0.75,
             status,
             error,
-            show_agents: true,
+            show_agents: false,
+            show_library: true,
+            library,
+            preview: None,
             show_help: false,
             pending: None,
             conflict: false,
@@ -157,6 +169,9 @@ impl Studio {
         self.error = true;
     }
     pub fn stop(&mut self) {
+        if let Some(preview) = &mut self.preview {
+            preview.stop();
+        }
         if let Some(a) = &mut self.audio {
             a.stop();
         }
@@ -168,6 +183,9 @@ impl Studio {
         self.audio.as_ref().map_or(0.0, |a| a.position_beats())
     }
     pub fn toggle_play(&mut self) {
+        if let Some(preview) = &mut self.preview {
+            preview.stop();
+        }
         if self.playing() {
             self.stop();
             return;
@@ -566,16 +584,26 @@ impl eframe::App for Studio {
                 ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
             }
         }
+        if !ctx.wants_keyboard_input() && ctx.input(|i| i.key_pressed(egui::Key::L)) {
+            self.show_library = !self.show_library;
+        }
+        if self.preview.as_ref().is_some_and(|p| p.is_playing()) {
+            ctx.request_repaint_after(Duration::from_millis(100));
+        }
         if !ctx.wants_keyboard_input() && ctx.input(|i| i.key_pressed(egui::Key::Space)) {
             self.toggle_play();
         }
         if ctx.input_mut(|i| i.consume_key(egui::Modifiers::CTRL, egui::Key::S)) {
             self.commit();
         }
-        if ctx.input_mut(|i| i.consume_key(egui::Modifiers::CTRL, egui::Key::Z)) {
+        if !ctx.wants_keyboard_input()
+            && ctx.input_mut(|i| i.consume_key(egui::Modifiers::CTRL, egui::Key::Z))
+        {
             self.history(false);
         }
-        if ctx.input_mut(|i| i.consume_key(egui::Modifiers::CTRL, egui::Key::Y)) {
+        if !ctx.wants_keyboard_input()
+            && ctx.input_mut(|i| i.consume_key(egui::Modifiers::CTRL, egui::Key::Y))
+        {
             self.history(true);
         }
         if ctx.input_mut(|i| i.consume_key(egui::Modifiers::CTRL, egui::Key::O)) {
@@ -586,14 +614,19 @@ impl eframe::App for Studio {
         if self.show_agents {
             self.agent_panel(ctx);
         }
+        if self.show_library {
+            self.library_panel(ctx);
+        }
         self.editor(ctx);
-        self.arrangement(ctx);
+        if !self.editor_expanded {
+            self.arrangement(ctx);
+        }
         if self.show_help {
             egui::Window::new("Studio guide").open(&mut self.show_help).resizable(false).show(ctx,|ui|{
                 ui.label("Space — play / stop     Ctrl+S — save     Ctrl+Z / Ctrl+Y — undo / redo");
                 ui.label("Double-click an empty track lane to create a clip. Drag a clip to move it.");
                 ui.label("Select a clip, then click the piano grid to add a note. Drag notes to move them.");
-                ui.label("Right-click a note to remove it. Sound controls edit the selected track.");
+                ui.label("Right-click a note to edit its length, velocity, pitch, or delete it. Sound controls edit the selected track.");
                 ui.label("Edits autosave locally. Playback restarts when a committed edit changes the sound.");
                 ui.separator();
                 ui.label("Foundation: fixed 4/4, built-in instruments and MIDI clips. Audio recording, VST3 hosting,");
@@ -642,6 +675,7 @@ mod tests {
         let mut app = Studio::new(dir.path().join("session.json"), true).unwrap();
         let ctx = egui::Context::default();
         crate::views::theme(&ctx);
+        app.load_sound("factory.dusk-wash.10");
         for width in [940.0, 1440.0, 1920.0] {
             for tab in [EditorTab::Piano, EditorTab::Sound, EditorTab::Mixer] {
                 app.tab = tab;
@@ -656,7 +690,7 @@ mod tests {
                     |ctx| {
                         app.header(ctx);
                         app.footer(ctx);
-                        app.agent_panel(ctx);
+                        app.library_panel(ctx);
                         app.editor(ctx);
                         app.arrangement(ctx);
                     },

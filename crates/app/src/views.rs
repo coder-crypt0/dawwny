@@ -37,7 +37,38 @@ pub fn theme(ctx: &egui::Context) {
     style
         .text_styles
         .insert(egui::TextStyle::Heading, FontId::proportional(21.0));
+    style.visuals.window_corner_radius = egui::CornerRadius::same(18);
+    style.visuals.menu_corner_radius = egui::CornerRadius::same(12);
+    for widget in [
+        &mut style.visuals.widgets.noninteractive,
+        &mut style.visuals.widgets.inactive,
+        &mut style.visuals.widgets.hovered,
+        &mut style.visuals.widgets.active,
+        &mut style.visuals.widgets.open,
+    ] {
+        widget.corner_radius = egui::CornerRadius::same(9);
+        widget.bg_stroke = Stroke::NONE;
+    }
+    style.spacing.item_spacing = Vec2::new(8.0, 6.0);
+    style.spacing.button_padding = Vec2::new(11.0, 6.0);
+    style.visuals.slider_trailing_fill = true;
     ctx.set_style(style);
+    // Use the user's installed interface font; no proprietary font is redistributed.
+    if cfg!(windows)
+        && let Ok(windows) = std::env::var("WINDIR")
+        && let Ok(bytes) = std::fs::read(std::path::Path::new(&windows).join("Fonts/segoeui.ttf"))
+    {
+        let mut fonts = egui::FontDefinitions::default();
+        fonts
+            .font_data
+            .insert("system-ui".into(), egui::FontData::from_owned(bytes).into());
+        fonts
+            .families
+            .entry(egui::FontFamily::Proportional)
+            .or_default()
+            .insert(0, "system-ui".into());
+        ctx.set_fonts(fonts);
+    }
 }
 pub fn instrument_name(i: Instrument) -> &'static str {
     match i {
@@ -67,65 +98,150 @@ impl Studio {
         egui::TopBottomPanel::top("header")
             .frame(
                 egui::Frame::new()
-                    .fill(PANEL)
-                    .inner_margin(egui::Margin::symmetric(18, 12)),
+                    .fill(BG)
+                    .inner_margin(egui::Margin::symmetric(14, 10)),
             )
             .show(ctx, |ui| {
                 ui.horizontal(|ui| {
-                    ui.label(
-                        egui::RichText::new("dawwny")
-                            .size(26.0)
-                            .strong()
-                            .color(ACCENT),
+                    ui.allocate_ui_with_layout(
+                        Vec2::new(210.0, 54.0),
+                        egui::Layout::top_down(egui::Align::LEFT),
+                        |ui| {
+                            ui.label(
+                                egui::RichText::new("dawwny")
+                                    .size(19.0)
+                                    .color(ACCENT)
+                                    .strong(),
+                            );
+                            let title: String = self.project.name.chars().take(24).collect();
+                            ui.menu_button(format!("{title}  ▼"), |ui| {
+                                if ui.button("New session").clicked() {
+                                    self.new_document(Project::default());
+                                    ui.close();
+                                }
+                                if ui.button("Open project / MIDI…    Ctrl+O").clicked() {
+                                    self.open();
+                                    ui.close();
+                                }
+                                if ui.button("Save    Ctrl+S").clicked() {
+                                    self.commit();
+                                    ui.close();
+                                }
+                                if ui.button("Save a copy…").clicked() {
+                                    self.save_as();
+                                    ui.close();
+                                }
+                                ui.separator();
+                                if ui
+                                    .add_enabled(
+                                        !self.undo.is_empty() || self.pending.is_some(),
+                                        egui::Button::new("Undo    Ctrl+Z"),
+                                    )
+                                    .clicked()
+                                {
+                                    self.history(false);
+                                    ui.close();
+                                }
+                                if ui
+                                    .add_enabled(
+                                        !self.redo.is_empty(),
+                                        egui::Button::new("Redo    Ctrl+Y"),
+                                    )
+                                    .clicked()
+                                {
+                                    self.history(true);
+                                    ui.close();
+                                }
+                                ui.separator();
+                                let mut bars = self.project.length_bars;
+                                if ui
+                                    .add(
+                                        egui::DragValue::new(&mut bars)
+                                            .range(1..=256)
+                                            .prefix("Length: ")
+                                            .suffix(" bars"),
+                                    )
+                                    .changed()
+                                {
+                                    self.edit(|p| p.length_bars = bars);
+                                }
+                                ui.label("Time signature: 4 / 4");
+                                if ui.button("Open Velvet Dawn demo").clicked() {
+                                    self.new_document(dawwny_core::demo_project());
+                                    ui.close();
+                                }
+                                if ui.button("Studio guide").clicked() {
+                                    self.show_help = true;
+                                    ui.close();
+                                }
+                            });
+                        },
                     );
-                    ui.add_space(10.0);
-                    ui.menu_button("Project", |ui| {
-                        if ui.button("New session").clicked() {
-                            self.new_document(Project::default());
-                            ui.close();
-                        }
-                        if ui.button("Open project / MIDI…").clicked() {
-                            self.open();
-                            ui.close();
-                        }
-                        if ui.button("Save  Ctrl+S").clicked() {
-                            self.commit();
-                            ui.close();
-                        }
-                        if ui.button("Save a copy…").clicked() {
-                            self.save_as();
-                            ui.close();
-                        }
-                        ui.separator();
-                        if ui.button("Open Velvet Dawn demo").clicked() {
-                            self.new_document(dawwny_core::demo_project());
-                            ui.close();
-                        }
-                    });
-                    if ui
-                        .add_enabled(
-                            !self.undo.is_empty() || self.pending.is_some(),
-                            egui::Button::new("Undo"),
-                        )
-                        .clicked()
-                    {
-                        self.history(false);
-                    }
-                    if ui
-                        .add_enabled(!self.redo.is_empty(), egui::Button::new("Redo"))
-                        .clicked()
-                    {
-                        self.history(true);
-                    }
-                    ui.separator();
-                    ui.label(egui::RichText::new(&self.project.name).strong());
-                    caption(ui, &format!(" /  {} tracks", self.project.tracks.len()));
+                    egui::Frame::new()
+                        .fill(PANEL)
+                        .corner_radius(18)
+                        .inner_margin(egui::Margin::symmetric(12, 8))
+                        .show(ui, |ui| {
+                            ui.horizontal(|ui| {
+                                if ui
+                                    .add(egui::Button::new("■").min_size(Vec2::splat(32.0)))
+                                    .on_hover_text("Stop and return to start")
+                                    .clicked()
+                                {
+                                    self.stop();
+                                }
+                                let play = egui::Button::new(
+                                    egui::RichText::new(if self.playing() { "Ⅱ" } else { "▶" })
+                                        .color(BG)
+                                        .size(18.0),
+                                )
+                                .fill(ACCENT)
+                                .corner_radius(18)
+                                .min_size(Vec2::new(48.0, 34.0));
+                                if ui.add(play).on_hover_text("Play / stop · Space").clicked() {
+                                    self.toggle_play();
+                                }
+                                ui.toggle_value(&mut self.looped, "↻")
+                                    .on_hover_text("Cycle arrangement; applies on next start");
+                                ui.add_space(6.0);
+                                let position = self.position();
+                                ui.vertical(|ui| {
+                                    ui.label(
+                                        egui::RichText::new(format!(
+                                            "{:03}  {:02}  {:02}",
+                                            position as u32 / 4 + 1,
+                                            position as u32 % 4 + 1,
+                                            (position.fract() * 100.0) as u32
+                                        ))
+                                        .monospace()
+                                        .size(18.0),
+                                    );
+                                    caption(ui, "BAR     BEAT    TICK");
+                                });
+                                ui.separator();
+                                let mut tempo = self.project.tempo;
+                                ui.vertical(|ui| {
+                                    if ui
+                                        .add(
+                                            egui::DragValue::new(&mut tempo)
+                                                .range(30.0..=300.0)
+                                                .speed(0.1)
+                                                .fixed_decimals(1),
+                                        )
+                                        .changed()
+                                    {
+                                        self.edit(|p| p.tempo = tempo);
+                                    }
+                                    caption(ui, "BPM   ·   4/4");
+                                });
+                            });
+                        });
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                         ui.menu_button("Export", |ui| {
                             if self.export_job.is_some() {
                                 ui.disable();
                             }
-                            if ui.button("WAV audio · 24-bit / 48 kHz").clicked() {
+                            if ui.button("WAV · 24-bit / 48 kHz").clicked() {
                                 self.export(true);
                                 ui.close();
                             }
@@ -135,107 +251,24 @@ impl Studio {
                             }
                         });
                         if ui
-                            .selectable_label(self.show_agents, "Agent connection")
+                            .selectable_label(self.show_agents, "MCP")
+                            .on_hover_text("Agent connection")
                             .clicked()
                         {
                             self.show_agents = !self.show_agents;
+                            if self.show_agents && ctx.content_rect().width() < 1300.0 {
+                                self.show_library = false;
+                            }
                         }
-                        if ui.button("?").on_hover_text("Studio guide").clicked() {
-                            self.show_help = true;
-                        }
-                    });
-                });
-                ui.add_space(7.0);
-                ui.horizontal(|ui| {
-                    if ui
-                        .button("■")
-                        .on_hover_text("Stop and return to start")
-                        .clicked()
-                    {
-                        self.stop();
-                    }
-                    let play = egui::Button::new(
-                        egui::RichText::new(if self.playing() {
-                            "Ⅱ  Stop"
-                        } else {
-                            "▶  Play"
-                        })
-                        .color(BG)
-                        .strong(),
-                    )
-                    .fill(ACCENT)
-                    .min_size(Vec2::new(100.0, 34.0));
-                    if ui.add(play).clicked() {
-                        self.toggle_play();
-                    }
-                    ui.toggle_value(&mut self.looped, "Loop")
-                        .on_hover_text("Applies on the next playback start");
-                    ui.add_space(10.0);
-                    let pos = self.position();
-                    ui.label(
-                        egui::RichText::new(format!(
-                            "{:03}  :  {:02}  :  {:02}",
-                            pos as u32 / 4 + 1,
-                            pos as u32 % 4 + 1,
-                            (pos.fract() * 100.0) as u32
-                        ))
-                        .monospace()
-                        .size(23.0),
-                    );
-                    ui.separator();
-                    let mut tempo = self.project.tempo;
-                    if ui
-                        .add(
-                            egui::DragValue::new(&mut tempo)
-                                .range(30.0..=300.0)
-                                .speed(0.1)
-                                .fixed_decimals(1),
-                        )
-                        .changed()
-                    {
-                        self.edit(|p| p.tempo = tempo);
-                    }
-                    caption(ui, "BPM");
-                    ui.separator();
-                    ui.label("4 / 4");
-                    ui.separator();
-                    let mut bars = self.project.length_bars;
-                    if ui
-                        .add(egui::DragValue::new(&mut bars).range(1..=256))
-                        .changed()
-                    {
-                        self.edit(|p| p.length_bars = bars);
-                    }
-                    caption(ui, "BARS");
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if let Some(a) = &self.audio {
-                            caption(ui, &format!("{} Hz  /  NATIVE", a.sample_rate()));
-                        } else {
-                            caption(ui, "NO AUDIO DEVICE");
-                        }
-                        let peak = self.audio.as_ref().map_or(0.0, |a| a.peak());
-                        let (r, _) = ui.allocate_exact_size(Vec2::new(88.0, 15.0), Sense::hover());
-                        ui.painter()
-                            .rect_filled(r, 2.0, Color32::from_rgb(16, 19, 21));
-                        for i in 0..18 {
-                            let on = (i as f32 / 18.0) < peak;
-                            let c = if on {
-                                if i > 15 {
-                                    Color32::from_rgb(233, 162, 98)
-                                } else {
-                                    ACCENT
-                                }
-                            } else {
-                                LINE
-                            };
-                            ui.painter().rect_filled(
-                                Rect::from_min_size(
-                                    r.min + Vec2::new(i as f32 * 5.0, 1.0),
-                                    Vec2::new(3.0, 13.0),
-                                ),
-                                1.0,
-                                c,
-                            );
+                        if ui
+                            .selectable_label(self.show_library, "Sounds")
+                            .on_hover_text("Sound library · L")
+                            .clicked()
+                        {
+                            self.show_library = !self.show_library;
+                            if self.show_library && ctx.content_rect().width() < 1300.0 {
+                                self.show_agents = false;
+                            }
                         }
                     });
                 });
@@ -267,7 +300,22 @@ impl Studio {
                         self.reload();
                     }
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        caption(ui, "NATIVE FOUNDATION  0.1");
+                        let peak = self.audio.as_ref().map_or(0.0, |a| a.peak());
+                        let (r, _) = ui.allocate_exact_size(Vec2::new(70.0, 6.0), Sense::hover());
+                        ui.painter().rect_filled(r, 3.0, LINE);
+                        ui.painter().rect_filled(
+                            Rect::from_min_size(r.min, Vec2::new(r.width() * peak, 6.0)),
+                            3.0,
+                            ACCENT,
+                        );
+                        caption(
+                            ui,
+                            if self.playing() {
+                                "NATIVE AUDIO"
+                            } else {
+                                "LOCAL STUDIO"
+                            },
+                        );
                     });
                 });
             });
@@ -275,7 +323,7 @@ impl Studio {
 
     pub fn agent_panel(&mut self, ctx: &egui::Context) {
         egui::SidePanel::right("agents").default_width(238.0).width_range(218.0..=350.0)
-            .frame(egui::Frame::new().fill(PANEL).inner_margin(egui::Margin::same(18))).show(ctx,|ui|{
+            .frame(egui::Frame::new().fill(PANEL).corner_radius(16).outer_margin(8).inner_margin(16)).show(ctx,|ui|{
             egui::ScrollArea::vertical().show(ui,|ui|{
                 caption(ui,"LOCAL MCP"); ui.add_space(6.0); ui.heading("Agent connection");
                 ui.add_space(8.0); ui.label("Connect your AI through the local MCP server. Every edit appears in this session.");
@@ -312,10 +360,23 @@ impl Studio {
         egui::CentralPanel::default()
             .frame(
                 egui::Frame::new()
-                    .fill(BG)
+                    .fill(Color32::from_rgb(25, 28, 34))
+                    .corner_radius(16)
+                    .outer_margin(egui::Margin {
+                        left: 8,
+                        right: 8,
+                        top: 4,
+                        bottom: 4,
+                    })
                     .inner_margin(egui::Margin::same(12)),
             )
             .show(ctx, |ui| {
+                let timeline_width = ui.available_width();
+                if self.fit_timeline {
+                    self.zoom = ((timeline_width - 190.0)
+                        / (84.0 * self.project.length_bars as f32))
+                        .clamp(0.02, 3.0);
+                }
                 ui.horizontal(|ui| {
                     caption(ui, "ARRANGEMENT");
                     ui.add_space(12.0);
@@ -335,18 +396,27 @@ impl Studio {
                         }
                     });
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        ui.add(
-                            egui::Slider::new(&mut self.zoom, 0.6..=3.0)
-                                .show_value(false)
-                                .text("Zoom"),
-                        );
+                        if ui
+                            .add(
+                                egui::Slider::new(&mut self.zoom, 0.02..=3.0)
+                                    .logarithmic(true)
+                                    .show_value(false)
+                                    .text("Zoom"),
+                            )
+                            .changed()
+                        {
+                            self.fit_timeline = false;
+                        }
+                        if ui.button("Fit").clicked() {
+                            self.fit_timeline = true;
+                        }
                     });
                 });
                 ui.add_space(8.0);
                 let header = 190.0;
                 let bar_width = 84.0 * self.zoom;
                 let beat_width = bar_width / 4.0;
-                let row_h = 66.0;
+                let row_h = 58.0;
                 let total_w = header + bar_width * self.project.length_bars as f32;
                 let total_h = 54.0 + row_h * self.project.tracks.len() as f32;
                 let mut select = None;
@@ -366,7 +436,7 @@ impl Studio {
                         );
                         let painter = ui.painter_at(rect);
                         let origin = rect.min;
-                        painter.rect_filled(rect, 0.0, BG);
+                        painter.rect_filled(rect, 12.0, BG);
                         painter.rect_filled(
                             Rect::from_min_size(origin, Vec2::new(rect.width(), 54.0)),
                             0.0,
@@ -385,7 +455,7 @@ impl Studio {
                                 Pos2::new(x, origin.y),
                                 Vec2::new(section.length_bars as f32 * bar_width - 2.0, 23.0),
                             );
-                            painter.rect_filled(r, 2.0, Color32::from_rgb(48, 54, 44));
+                            painter.rect_filled(r, 7.0, Color32::from_rgb(48, 54, 44));
                             painter.text(
                                 r.left_center() + Vec2::new(9.0, 0.0),
                                 Align2::LEFT_CENTER,
@@ -400,7 +470,9 @@ impl Studio {
                                 [Pos2::new(x, origin.y + 27.0), Pos2::new(x, rect.bottom())],
                                 Stroke::new(1.0_f32, LINE),
                             );
-                            if bar < self.project.length_bars {
+                            if bar < self.project.length_bars
+                                && bar % (40.0 / bar_width).ceil().max(1.0) as u32 == 0
+                            {
                                 painter.text(
                                     Pos2::new(x + 7.0, origin.y + 39.0),
                                     Align2::LEFT_CENTER,
@@ -418,7 +490,11 @@ impl Studio {
                                 Vec2::new(rect.width(), row_h),
                             );
                             if ti == self.selected_track {
-                                painter.rect_filled(row, 0.0, Color32::from_rgb(30, 33, 39));
+                                painter.rect_filled(
+                                    row.shrink(2.0),
+                                    10.0,
+                                    Color32::from_rgb(30, 33, 39),
+                                );
                             }
                             painter.line_segment(
                                 [row.left_bottom(), row.right_bottom()],
@@ -491,18 +567,23 @@ impl Studio {
                                 let sel = ti == self.selected_track && ci == self.selected_clip;
                                 painter.rect_filled(
                                     r,
-                                    4.0,
+                                    9.0,
                                     c.gamma_multiply(if track.mute { 0.18 } else { 0.32 }),
                                 );
                                 painter.rect_filled(
                                     Rect::from_min_size(r.min, Vec2::new(r.width(), 19.0)),
-                                    3.0,
+                                    egui::CornerRadius {
+                                        nw: 9,
+                                        ne: 9,
+                                        sw: 2,
+                                        se: 2,
+                                    },
                                     c.gamma_multiply(if track.mute { 0.4 } else { 0.78 }),
                                 );
                                 if sel {
                                     painter.rect_stroke(
                                         r,
-                                        4.0,
+                                        9.0,
                                         Stroke::new(1.5_f32, c),
                                         StrokeKind::Inside,
                                     );
@@ -637,15 +718,29 @@ impl Studio {
     }
 
     pub fn editor(&mut self, ctx: &egui::Context) {
-        egui::TopBottomPanel::bottom("editor")
-            .default_height(300.0)
-            .min_height(230.0)
-            .max_height(520.0)
-            .resizable(true)
+        let panel = if self.editor_expanded {
+            egui::TopBottomPanel::bottom("editor_expanded")
+                .exact_height((ctx.available_rect().height() - 8.0).max(230.0))
+                .resizable(false)
+        } else {
+            egui::TopBottomPanel::bottom("editor")
+                .default_height(290.0)
+                .min_height(230.0)
+                .max_height(650.0)
+                .resizable(true)
+        };
+        panel
             .frame(
                 egui::Frame::new()
                     .fill(PANEL)
-                    .inner_margin(egui::Margin::same(12)),
+                    .corner_radius(16)
+                    .outer_margin(egui::Margin {
+                        left: 8,
+                        right: 8,
+                        top: 4,
+                        bottom: 8,
+                    })
+                    .inner_margin(egui::Margin::same(14)),
             )
             .show(ctx, |ui| {
                 ui.horizontal(|ui| {
@@ -656,6 +751,19 @@ impl Studio {
                     if let Some(t) = self.project.tracks.get(self.selected_track) {
                         ui.label(egui::RichText::new(&t.name).color(color(t.color)));
                     }
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui
+                            .button(if self.editor_expanded {
+                                "Collapse"
+                            } else {
+                                "Expand"
+                            })
+                            .on_hover_text("Use the full workspace for this editor")
+                            .clicked()
+                        {
+                            self.editor_expanded = !self.editor_expanded;
+                        }
+                    });
                 });
                 ui.separator();
                 match self.tab {
@@ -748,34 +856,74 @@ impl Studio {
         let mut add = None;
         let mut remove = None;
         let mut move_note = None;
-        egui::ScrollArea::both().id_salt(("piano",&clip.id)).auto_shrink([false,false]).show(ui,|ui|{
-            let (rect,response)=ui.allocate_exact_size(Vec2::new(width.max(ui.available_width()),height),Sense::click());let painter=ui.painter_at(rect);let origin=rect.min;
-            for pitch in lo..=hi{
-                let y=origin.y+(hi-pitch)as f32*row;let black=matches!(pitch%12,1|3|6|8|10);
+        egui::ScrollArea::both().id_salt(("piano",&clip.id)).auto_shrink([false,false]).show(ui,|ui| {
+            let (rect,response)=ui.allocate_exact_size(Vec2::new(width.max(ui.available_width()),height),Sense::click());
+            let painter=ui.painter_at(rect);let origin=rect.min;
+            for pitch in lo..=hi {
+                let y=origin.y+(hi-pitch)as f32*row;
+                let black=matches!(pitch%12,1|3|6|8|10);
                 let rr=Rect::from_min_size(Pos2::new(origin.x,y),Vec2::new(rect.width(),row));
-                painter.rect_filled(rr,0.0,if black{Color32::from_rgb(22,24,29)}else{Color32::from_rgb(30,33,38)});
+                painter.rect_filled(rr,3.0,if black{Color32::from_rgb(22,24,29)}else{Color32::from_rgb(30,33,38)});
                 let kr=Rect::from_min_size(rr.min,Vec2::new(key-2.0,row-1.0));
-                painter.rect_filled(kr,0.0,if black{Color32::from_rgb(42,45,51)}else{Color32::from_rgb(175,181,185)});
-                if pitch%12==0||!black{painter.text(kr.center(),Align2::CENTER_CENTER,note_name(pitch),FontId::monospace(11.0),if black{TEXT}else{BG});}
+                painter.rect_filled(kr,4.0,if black{Color32::from_rgb(42,45,51)}else{Color32::from_rgb(175,181,185)});
+                if pitch%12==0||!black {
+                    painter.text(kr.center(),Align2::CENTER_CENTER,note_name(pitch),FontId::monospace(11.0),if black{TEXT}else{BG});
+                }
             }
-            for step in 0..=(clip.length/self.grid)as usize{
+            for step in 0..=(clip.length/self.grid)as usize {
                 let x=origin.x+key+step as f32*self.grid as f32*beat;
                 let major=(step as f64*self.grid)%4.0<0.01;
-                painter.line_segment([Pos2::new(x,rect.top()),Pos2::new(x,rect.bottom())],Stroke::new(1.0_f32,if major{Color32::from_rgb(76,81,88)}else{LINE}));
+                painter.line_segment([Pos2::new(x,rect.top()),Pos2::new(x,rect.bottom())],Stroke::new(1.0_f32,if major{Color32::from_rgb(65,70,80)}else{LINE}));
             }
             let mut hit=false;
-            for (i,n)in clip.notes.iter().enumerate(){
+            for (i,n) in clip.notes.iter().enumerate() {
                 let nr=Rect::from_min_size(Pos2::new(origin.x+key+n.start as f32*beat,origin.y+(hi-n.pitch)as f32*row+1.0),Vec2::new((n.duration as f32*beat-1.0).max(3.0),row-2.0));
-                painter.rect_filled(nr,3.0,tint.gamma_multiply(0.55+n.velocity*0.45));
-                if nr.width()>28.0{ui.painter_at(nr).text(nr.left_center()+Vec2::new(5.0,0.0),Align2::LEFT_CENTER,note_name(n.pitch),FontId::monospace(11.0),BG);}
-                let res=ui.interact(nr,ui.id().with(&n.id),Sense::click_and_drag()).on_hover_text(format!("{} · {:.2} beats · velocity {:.0}%\nDrag to move · right-click to delete",note_name(n.pitch),n.duration,n.velocity*100.0));
+                painter.rect_filled(nr,5.0,tint.gamma_multiply(0.55+n.velocity*0.45));
+                if nr.width()>28.0 {
+                    ui.painter_at(nr).text(nr.left_center()+Vec2::new(5.0,0.0),Align2::LEFT_CENTER,note_name(n.pitch),FontId::monospace(11.0),BG);
+                }
+                let res=ui.interact(nr,ui.id().with(&n.id),Sense::click_and_drag()).on_hover_text(format!("{} · {:.2} beats · velocity {:.0}%\nDrag to move · right-click to edit",note_name(n.pitch),n.duration,n.velocity*100.0));
                 if res.hovered(){hit=true;}
-                if res.secondary_clicked(){remove=Some(i);}
+                let mut edited=n.clone();
+                res.context_menu(|ui| {
+                    ui.label(egui::RichText::new("Note properties").strong());
+                    ui.add(egui::DragValue::new(&mut edited.pitch).range(0..=127).prefix("Pitch "));
+                    ui.add(egui::DragValue::new(&mut edited.duration).range((1.0/960.0)..=(clip.length-n.start)).speed(0.125).prefix("Length ").suffix(" beats"));
+                    ui.add(egui::Slider::new(&mut edited.velocity,0.0..=1.0).text("Velocity"));
+                    if ui.button("Delete note").clicked(){remove=Some(i);ui.close();}
+                });
+                if edited!=*n{move_note=Some((i,edited));}
                 if res.drag_started(){self.note_drag=ui.input(|i|i.pointer.press_origin()).map(|origin|(i,n.clone(),origin));}
-                if res.drag_stopped()&& let Some((index,mut original,drag_origin))=self.note_drag.take(){let delta=ui.input(|i|i.pointer.latest_pos()).unwrap_or(drag_origin)-drag_origin;let dx=delta.x as f64/beat as f64;original.start=((original.start+dx)/self.grid).round()*self.grid;original.start=original.start.clamp(0.0,(clip.length-original.duration).max(0.0));original.pitch=(original.pitch as i16-(delta.y/row).round()as i16).clamp(0,127)as u8;move_note=Some((index,original));}
+                if res.dragged() && let Some((_,original,drag_origin))=&self.note_drag {
+                    let delta=ui.input(|i|i.pointer.latest_pos()).unwrap_or(*drag_origin)-*drag_origin;
+                    let start=((original.start+delta.x as f64/beat as f64)/self.grid).round()*self.grid;
+                    let start=start.clamp(0.0,(clip.length-original.duration).max(0.0));
+                    let ghost=nr.translate(Vec2::new((start-n.start)as f32*beat,(delta.y/row).round()*row));
+                    painter.rect_filled(ghost,5.0,tint.gamma_multiply(0.35));
+                    painter.rect_stroke(ghost,5.0,Stroke::new(1.3_f32,TEXT),StrokeKind::Inside);
+                }
+                if res.drag_stopped() && let Some((index,mut original,drag_origin))=self.note_drag.take() {
+                    let delta=ui.input(|i|i.pointer.latest_pos()).unwrap_or(drag_origin)-drag_origin;
+                    let dx=delta.x as f64/beat as f64;
+                    original.start=((original.start+dx)/self.grid).round()*self.grid;
+                    original.start=original.start.clamp(0.0,(clip.length-original.duration).max(0.0));
+                    original.pitch=(original.pitch as i16-(delta.y/row).round()as i16).clamp(0,127)as u8;
+                    move_note=Some((index,original));
+                }
             }
-            if response.clicked()&&!hit&& let Some(p)=response.interact_pointer_pos()&& p.x>=origin.x+key&&p.x<origin.x+width{let start=(((p.x-origin.x-key)/beat)as f64/self.grid).floor()*self.grid;let pitch=hi.saturating_sub(((p.y-origin.y)/row)as u8);add=Some(Note{id:dawwny_core::new_id(),pitch,start,duration:self.note_length.min(clip.length-start),velocity:self.note_velocity});}
-            if self.playing(){let pos=self.position()-clip.start;if pos>=0.0&&pos<clip.length{let x=origin.x+key+pos as f32*beat;painter.line_segment([Pos2::new(x,rect.top()),Pos2::new(x,rect.bottom())],Stroke::new(1.5_f32,ACCENT));}}
+            if response.clicked() && !hit && let Some(p)=response.interact_pointer_pos() && p.x>=origin.x+key && p.x<origin.x+width {
+                let start=(((p.x-origin.x-key)/beat)as f64/self.grid).floor()*self.grid;
+                let pitch=hi.saturating_sub(((p.y-origin.y)/row)as u8);
+                let duration=self.note_length.min(clip.length-start);
+                if duration>=1.0/960.0 {add=Some(Note{id:dawwny_core::new_id(),pitch,start,duration,velocity:self.note_velocity});}
+            }
+            if self.playing() {
+                let position=self.position()-clip.start;
+                if position>=0.0 && position<clip.length {
+                    let x=origin.x+key+position as f32*beat;
+                    painter.line_segment([Pos2::new(x,rect.top()),Pos2::new(x,rect.bottom())],Stroke::new(1.5_f32,ACCENT));
+                }
+            }
         });
         if let Some(n) = add {
             self.edit(|p| p.tracks[ti].clips[ci].notes.push(n));
@@ -785,7 +933,9 @@ impl Studio {
                 p.tracks[ti].clips[ci].notes.remove(i);
             });
         }
-        if let Some((i, n)) = move_note {
+        if remove.is_none()
+            && let Some((i, n)) = move_note
+        {
             self.edit(|p| p.tracks[ti].clips[ci].notes[i] = n);
         }
     }
@@ -819,7 +969,7 @@ impl Studio {
                     egui::Frame::new()
                         .fill(BG)
                         .inner_margin(egui::Margin::same(12))
-                        .corner_radius(6.0)
+                        .corner_radius(14.0)
                         .show(ui, |ui| {
                             ui.set_width(115.0);
                             ui.label(egui::RichText::new(&t.name).color(color(t.color)).strong());
@@ -851,7 +1001,7 @@ impl Studio {
                 egui::Frame::new()
                     .fill(Color32::from_rgb(39, 46, 36))
                     .inner_margin(egui::Margin::same(12))
-                    .corner_radius(6.0)
+                    .corner_radius(14.0)
                     .show(ui, |ui| {
                         ui.set_width(100.0);
                         ui.label(egui::RichText::new("MASTER").color(ACCENT).strong());

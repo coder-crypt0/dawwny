@@ -17,7 +17,8 @@ filesystem paths.
 
 ## Tools
 
-- `list_sounds` discovers Dawn synth presets and the stock effects rack. [Sound workflow](sound-design.md).
+- `list_sounds` searches the 2,310-entry Dawn catalog across 12 categories. Results contain lightweight preset metadata; optionally pass `query`, `category`, `offset`, and `limit` (1–100). The response includes `total`, the current `offset`, and `next_offset` when another page exists. The catalog comprises 72 families × 32 generated variations plus six signature presets; this is a recipe count, not a claim that every patch was professionally auditioned.
+- `get_sound` takes a stable `preset_id` returned by `list_sounds` and returns the complete editable patch. Use the preset tool or update a track to load it. [Sound workflow](sound-design.md).
 - `read_project` returns the complete project document and its revision.
 - `apply_commands` applies a list of typed musical commands only when
   `expected_revision` equals the stored revision. A stale request fails with a

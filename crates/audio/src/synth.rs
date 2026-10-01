@@ -84,6 +84,7 @@ fn oscillator(wave: Waveform, phase: f32, dt: f32, width: f32) -> f32 {
             let width = width.clamp(dt, 1.0 - dt);
             (if phase < width { 1.0 } else { -1.0 }) + poly_blep(phase, dt)
                 - poly_blep((phase - width).rem_euclid(1.0), dt)
+                - (2.0 * width - 1.0)
         }
         Waveform::Triangle => {
             // Truncated odd-harmonic series: no harmonics above Nyquist.

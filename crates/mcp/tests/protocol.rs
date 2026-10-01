@@ -31,17 +31,29 @@ async fn mcp_client_edits_the_native_session_and_exports_real_music() -> anyhow:
     });
     let mut client = ().serve(client_io).await?;
     let tools = client.list_all_tools().await?;
-    assert_eq!(tools.len(), 5);
+    assert_eq!(tools.len(), 6);
     let catalog = client
         .call_tool(CallToolRequestParams::new("list_sounds"))
         .await?;
-    assert_eq!(output(&catalog)["presets"].as_array().unwrap().len(), 6);
+    assert_eq!(output(&catalog)["total"], 2310);
+    assert_eq!(output(&catalog)["sounds"].as_array().unwrap().len(), 24);
+    let sound = client
+        .call_tool(
+            CallToolRequestParams::new("get_sound").with_arguments(
+                json!({"preset_id":"factory.soft-sub.00"})
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+            ),
+        )
+        .await?;
+    assert!(output(&sound)["patch"]["synth"].is_object());
     let read = client
         .call_tool(CallToolRequestParams::new("read_project"))
         .await?;
     assert_eq!(output(&read)["revision"], 0);
     let apply = CallToolRequestParams::new("apply_commands").with_arguments(
-        json!({"expected_revision":0,"commands":[{"type":"set_tempo","tempo":110.0},{"type":"apply_sound_preset","track_id":project.tracks[0].id,"preset_id":"glass_orbit"}]})
+        json!({"expected_revision":0,"commands":[{"type":"set_tempo","tempo":110.0},{"type":"apply_sound_preset","track_id":project.tracks[0].id,"preset_id":"factory.soft-sub.00"}]})
             .as_object()
             .unwrap()
             .clone(),
