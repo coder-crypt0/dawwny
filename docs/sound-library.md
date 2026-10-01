@@ -24,4 +24,6 @@ Run `cargo run --release -p dawwny-audio --example audit_bank --locked` for a 16
 
 The first 16 kHz pass rendered all 2,310 presets for six seconds each, with a three-second note at the category's audition pitch. All were valid, finite, audible, below the limiter threshold, and distinct under a deterministic waveform hash after quantization to 1e-5. Maximum single-note output peak was 0.126919; minimum whole-excerpt RMS was 0.000435; maximum absolute DC was 0.000029. The RMS includes silence and release and is therefore not a loudness-matching measure.
 
+The full 48 kHz pass also passed for all 2,310 presets through each scheduled effect tail: maximum peak 0.121030, minimum whole-render RMS 0.001095, maximum absolute DC 0.000052. It completed in 188.91 seconds on the development machine. These are single-note checks at the documented audit gain, not stress tests of every chord, pitch, or user-edited patch.
+
 Automated checks catch silence, unsafe levels, exact audio duplicates and rendering errors. They do not establish pleasantness, mix translation, genre coverage, or subjective similarity. A systematic listening pass and broader musical tests remain necessary before calling the entire bank production-curated.

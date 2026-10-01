@@ -54,7 +54,7 @@ Press **Space** to play. Select a clip to open its piano roll. Double-click an e
 
 Edits save locally after a short debounce. A committed edit restarts active playback from the beginning; smooth live graph replacement and seeking are future transport work. MIDI import supports constant-tempo 4/4 note sequences, not another DAW's complete instrument/controller state.
 
-[Studio guide](docs/studio-guide.md) · [Sound design](docs/sound-design.md) · [Project format](docs/project-format.md) · [Architecture](docs/architecture.md) · [Roadmap](docs/roadmap.md)
+[Studio guide](docs/studio-guide.md) · [Sound library](docs/sound-library.md) · [Sound design](docs/sound-design.md) · [Interface design](docs/interface-design.md) · [Project format](docs/project-format.md) · [Architecture](docs/architecture.md) · [Roadmap](docs/roadmap.md)
 
 ## Built to stay small
 
@@ -83,7 +83,9 @@ cargo run --release -p dawwny-audio --example render -- exports/velvet-dawn.wav
 
 Tests cover validation, atomic edits, concurrent writers, MIDI round trips, audible DSP controls, bounded rendering memory, callback allocations, WAV data, GUI state/undo/conflicts, and a real MCP client/server exchange.
 
-For a separate process check after building, run `python scripts/smoke-mcp.py`. Native UI captures use the optional `capture` feature and `DAWWNY_SCREENSHOT_PATH`; that feature is excluded from normal builds. The screenshots above use `--no-audio` for repeatable capture.
+For a separate process check after building, run `python scripts/smoke-mcp.py`. Native UI captures use the optional `capture` feature and `DAWWNY_SCREENSHOT_PATH`; that feature is excluded from normal builds. The screenshots show the real application with a local Dawn showcase session. Use `--view sound --expanded` to open the full sound designer.
+
+After building both release executables, `python scripts/package-windows.py` creates a portable Windows ZIP under `artifacts/`, with documentation, demo projects, third-party notices and a SHA-256 sidecar. This is local packaging; it does not publish a GitHub release or install anything.
 
 No hosting is configured. Future remote control will use Hostinger when that part of the project is implemented. Native VST3 support will require a separate crash-isolated plugin host; this build does not scan or load installed plugin binaries.
 
