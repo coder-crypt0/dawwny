@@ -1,3 +1,4 @@
+mod keyboard;
 mod library;
 mod sound_editor;
 mod studio;

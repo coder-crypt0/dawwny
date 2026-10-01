@@ -219,10 +219,11 @@ impl Studio {
                     if let Some(info)=selected {
                         ui.label(egui::RichText::new(&info.name).strong());
                         ui.label(egui::RichText::new(&info.description).small().weak());
+                        ui.label(egui::RichText::new(info.engine).small().weak());
                         ui.horizontal(|ui| {
                             if ui.button("▶ Preview").clicked(){preview=Some(info.id.clone());}
                             if ui.button("Use sound").clicked(){load=Some(info.id.clone());}
-                            if self.preview.as_ref().is_some_and(|p|p.is_playing()) && ui.button("■").clicked(){self.preview.as_mut().unwrap().stop();}
+                            if self.preview.as_ref().is_some_and(|p|p.is_playing()) && ui.button("■").clicked()&& let Err(e)=self.preview.as_mut().unwrap().stop(){self.status=format!("Preview stop failed: {e}");self.error=true;}
                         });
                     }else{ui.label(egui::RichText::new("Select a sound to preview it. Double-click to use it on the selected track.").small().weak());}
                     if let Some(error)=&self.library.error{ui.colored_label(Color32::LIGHT_RED,error);}
@@ -242,7 +243,7 @@ impl Studio {
                                 let mut content=ui.new_child(egui::UiBuilder::new().max_rect(rect.shrink2(Vec2::new(9.0,5.0))).layout(egui::Layout::top_down(egui::Align::Min)));
                                 content.spacing_mut().item_spacing.y=2.0;
                                 content.add(egui::Label::new(egui::RichText::new(&info.name).size(12.5)).truncate());
-                                content.add(egui::Label::new(egui::RichText::new(&info.category).small().weak()).truncate());
+                                content.add(egui::Label::new(egui::RichText::new(format!("{} · Synth",info.category)).small().weak()).truncate());
                                 response.widget_info(||egui::WidgetInfo::selected(egui::WidgetType::SelectableLabel,ui.is_enabled(),selected,&info.name));
                                 let response=response.on_hover_text(&info.name);
                                 if response.clicked(){self.library.selected=Some(info.id.clone());}

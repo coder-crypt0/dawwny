@@ -52,7 +52,7 @@ Use **Agent connection → Copy MCP configuration** to get the correct executabl
 
 Press **Space** to play. Select a clip to open its piano roll. Double-click an empty lane to create a clip, then click in the piano roll to add notes. Drag clips and notes to move them; right-click a note for pitch, length, velocity, and delete controls. Toggle **Sounds** (or press **L**) to search and filter the library, favorite sounds, audition a separate preview, or use a sound on the selected track. See the [studio guide](docs/studio-guide.md) for project controls.
 
-Edits save locally after a short debounce. A committed edit restarts active playback from the beginning; smooth live graph replacement and seeking are future transport work. MIDI import supports constant-tempo 4/4 note sequences, not another DAW's complete instrument/controller state.
+Edits save locally after a short debounce. Space pauses/resumes at the current position; Stop returns to the beginning. Click or drag the arrangement ruler to seek. Mute, solo, gain, pan, and master changes apply during playback; saved agent edits preserve the musical position. Ctrl+K opens musical typing and native MIDI input selection. MIDI import supports constant-tempo 4/4 note sequences, not another DAW's complete instrument/controller state.
 
 [Studio guide](docs/studio-guide.md) · [Sound library](docs/sound-library.md) · [Sound design](docs/sound-design.md) · [Interface design](docs/interface-design.md) · [Project format](docs/project-format.md) · [Architecture](docs/architecture.md) · [Roadmap](docs/roadmap.md)
 

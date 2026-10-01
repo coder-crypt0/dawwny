@@ -29,3 +29,12 @@ A lightweight remote editor will control the same native engine over an authenti
 - [Official MCP Rust SDK](https://github.com/modelcontextprotocol/rust-sdk)
 - [Steinberg VST3 documentation](https://steinbergmedia.github.io/vst3_dev_portal/)
 
+## Transport and instrument input
+
+Space pauses/resumes at the current position. Stop returns to beat zero. Click or drag the arrangement ruler to seek, including while stopped. Mix controls update the running graph without discarding voices or effect state; a short ramp smooths gain, pan, mute, solo and master changes.
+
+Tempo, notes, or instrument/effect changes prepare a replacement graph on the control thread. The callback swaps it at a block boundary and preserves musical position, chasing notes that cross the new position. Replaced graphs are reclaimed on the control thread through a bounded return queue. Seeking starts with fresh effect history rather than reconstructing the complete preceding wet tail.
+
+Computer-keyboard, on-screen-keyboard and native MIDI input use a separate live monitor of the selected track. They can sound while the arrangement is paused or stopped. MIDI note-on/off, velocity, sustain and panic are supported. Input recording, pitch bend and expression mappings remain future work.
+
+The native callback consumes bounded queues and does not lock the MIDI producer mutex. Renderer construction, file work and buffer destruction remain on the control thread. Tests exercise callback graph swaps, seeking, mix commands and live input under an allocation/free counter. CPAL stream setup and teardown are outside that measured processing path.

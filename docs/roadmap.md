@@ -10,3 +10,13 @@ Each milestone is committed, checked, pushed, and merged to the public repositor
 - [ ] M5: measured release build and integration smoke checks
 
 Later development: automation lanes, audio recording and editing, hardware MIDI, tempo maps, undo persistence, plugin delay compensation, crash-isolated VST3 hosting, plugin presets, stem freezing, authenticated remote control, collaborative sessions, and Hostinger hosting. These are not part of the initial feature-completeness claim.
+
+## Live workflow follow-up
+
+- [x] Seek a stopped or running transport; pause and resume without rewinding
+- [x] Live mute/solo, gain, pan, master and loop changes
+- [x] Preserve musical position when human or agent edits replace the graph
+- [x] Computer/on-screen keyboard audition and native MIDI note/velocity/sustain input
+- [ ] Record incoming MIDI; pitch bend and controller mapping
+- [ ] Native sample instruments with accurate acoustic names and curated listening checks
+- [ ] Audio tracks/recording and crash-isolated VST3 hosting

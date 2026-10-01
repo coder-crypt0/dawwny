@@ -508,7 +508,7 @@ pub(super) const FAMILIES: &[Family] = &[
     },
     Family {
         id: "soft-brass-stack",
-        name: "Soft Brass Stack",
+        name: "Soft Synth Brass",
         category: "Brass",
         waves: [Saw, Pulse],
         tune: 0,
@@ -532,7 +532,7 @@ pub(super) const FAMILIES: &[Family] = &[
     },
     Family {
         id: "muted-section",
-        name: "Muted Section",
+        name: "Muted Synth Section",
         category: "Brass",
         waves: [Pulse, Saw],
         tune: 0,
@@ -592,7 +592,7 @@ pub(super) const FAMILIES: &[Family] = &[
     },
     Family {
         id: "fifth-string-bed",
-        name: "Fifth String Bed",
+        name: "Fifth Synth Strings",
         category: "Strings",
         waves: [Saw, Triangle],
         tune: 7,
@@ -604,7 +604,7 @@ pub(super) const FAMILIES: &[Family] = &[
     },
     Family {
         id: "soft-bow",
-        name: "Soft Bow",
+        name: "Soft Bowed Synth",
         category: "Strings",
         waves: [Pulse, Triangle],
         tune: 0,
@@ -616,7 +616,7 @@ pub(super) const FAMILIES: &[Family] = &[
     },
     Family {
         id: "high-string-layer",
-        name: "High String Layer",
+        name: "High Synth Strings",
         category: "Strings",
         waves: [Triangle, Saw],
         tune: 12,
@@ -628,7 +628,7 @@ pub(super) const FAMILIES: &[Family] = &[
     },
     Family {
         id: "low-cello-color",
-        name: "Low Cello Color",
+        name: "Low Saw Ensemble",
         category: "Strings",
         waves: [Saw, Triangle],
         tune: -12,
@@ -640,7 +640,7 @@ pub(super) const FAMILIES: &[Family] = &[
     },
     Family {
         id: "narrow-strings",
-        name: "Narrow Strings",
+        name: "Narrow Synth Strings",
         category: "Strings",
         waves: [Triangle, Pulse],
         tune: 5,

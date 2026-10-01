@@ -4,7 +4,7 @@ Run `cargo run -p dawwny-app`, or open the release `dawwny.exe`. A new session s
 
 ## Arrange and edit
 
-- Press **Space** to play or stop. The loop button applies when playback starts.
+- Press **Space** to play or pause at the current position. **Stop** returns to the beginning. Click or drag the numbered arrangement ruler to move the playhead. The loop button changes the running transport.
 - Click a clip to open its piano roll. Drag a clip to move it on the quantized grid.
 - Double-click an empty track lane to create a one-bar clip. Add instruments with **+ Track**.
 - Click empty piano-roll space to add a note. Set grid, note length, and velocity for new notes in the editor toolbar. Drag notes to change time and pitch. Right-click a note to open its properties, where you can edit pitch, length, and velocity or delete it.
@@ -14,9 +14,15 @@ Run `cargo run -p dawwny-app`, or open the release `dawwny.exe`. A new session s
 - **Mixer** provides track faders, mute/solo, pan, and a master fader.
 - **Expand** gives the piano roll, sound designer, or mixer the full workspace; **Collapse** returns to the arrangement. Drag the editor's upper edge to resize the split view. **Fit** shows the entire arrangement horizontally.
 
-Edits autosave after a short debounce. Undo/redo retain up to 32 edit groups in memory. The audio plan is immutable during a playback run: saving a sound or note edit restarts playback from the beginning. Continuous live graph replacement and seeking are later transport improvements.
+Edits autosave after a short debounce. Undo/redo retain up to 32 edit groups in memory. Mixing controls update the running graph with a short smoothing ramp and retain voices/effect tails. Notes, instrument patches, or tempo changes swap a prepared graph at an audio block boundary while preserving the musical position. Seeks chase notes crossing the new position. New graphs begin with fresh effect history, so this is not yet a seamless reconstruction of preceding reverb/echo tails.
 
 ![Native synthesizer controls](images/sound.png)
+
+## Play instruments
+
+Open **Keys** or press **Ctrl+K** for musical typing. A–L play the white notes, with the displayed upper-row keys for sharps; **Z/X** change octave. Velocity is adjustable. Click the on-screen keys to audition the selected track. Input uses a separate monitor path and works with the arrangement stopped or paused; it does not insert or record notes into a clip.
+
+Use **Refresh MIDI devices**, then choose your hardware controller. Native MIDI input supports note-on/off, velocity, sustain pedal (CC64), and all-notes-off. The **Panic** button releases keyboard/controller notes. Typing into a text field or losing window focus releases computer-keyboard notes. Hardware MIDI has not been tested against a connected physical controller on the development machine. Input recording, pitch bend, expression mapping, and device hot-plug recovery remain open work.
 
 ## Files and export
 
@@ -34,4 +40,4 @@ Example agent request: “Read this session, add a soft bass line following the 
 
 ## Current boundaries
 
-This is a MIDI composition prototype, not a full Logic Pro replacement. Native plugin hosting, sample/audio tracks, recording, hardware MIDI, automation lanes, tempo maps, plugin delay compensation, per-note expression, stems, and remote collaboration are future milestones. It has no network listener and no site deployment. Hostinger will be considered when remote access is implemented.
+This is a MIDI composition prototype, not a full Logic Pro replacement. Native plugin hosting, sample/audio tracks, recording, input recording and controller mapping, automation lanes, tempo maps, plugin delay compensation, per-note expression, stems, and remote collaboration are future milestones. It has no network listener and no site deployment. Hostinger will be considered when remote access is implemented.

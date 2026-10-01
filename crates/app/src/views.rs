@@ -198,11 +198,17 @@ impl Studio {
                                 .fill(ACCENT)
                                 .corner_radius(18)
                                 .min_size(Vec2::new(48.0, 34.0));
-                                if ui.add(play).on_hover_text("Play / stop · Space").clicked() {
+                                if ui.add(play).on_hover_text("Play / pause · Space").clicked() {
                                     self.toggle_play();
                                 }
-                                ui.toggle_value(&mut self.looped, "↻")
-                                    .on_hover_text("Cycle arrangement; applies on next start");
+                                if ui
+                                    .toggle_value(&mut self.looped, "↻")
+                                    .on_hover_text("Cycle arrangement")
+                                    .changed()
+                                    && let Some(audio) = &self.audio
+                                {
+                                    audio.set_looped(self.looped);
+                                }
                                 ui.add_space(6.0);
                                 let position = self.position();
                                 ui.vertical(|ui| {
@@ -237,6 +243,13 @@ impl Studio {
                             });
                         });
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui
+                            .selectable_label(self.keyboard.open, "Keys")
+                            .on_hover_text("Musical typing and MIDI input · Ctrl+K")
+                            .clicked()
+                        {
+                            self.keyboard.open = !self.keyboard.open;
+                        }
                         ui.menu_button("Export", |ui| {
                             if self.export_job.is_some() {
                                 ui.disable();
@@ -423,6 +436,7 @@ impl Studio {
                 let mut moved = None;
                 let mut new_clip = None;
                 let mut mix = None;
+                let mut seek = None;
                 egui::ScrollArea::both()
                     .id_salt("arrange_scroll")
                     .auto_shrink([false, false])
@@ -436,6 +450,25 @@ impl Studio {
                         );
                         let painter = ui.painter_at(rect);
                         let origin = rect.min;
+                        let ruler = Rect::from_min_max(
+                            Pos2::new(origin.x + header, origin.y + 25.0),
+                            Pos2::new(rect.right(), origin.y + 54.0),
+                        );
+                        let ruler_response = ui
+                            .interact(
+                                ruler,
+                                ui.id().with("playhead_ruler"),
+                                Sense::click_and_drag(),
+                            )
+                            .on_hover_text("Click or drag to move the playhead");
+                        if (ruler_response.clicked() || ruler_response.dragged())
+                            && let Some(p) = ruler_response.interact_pointer_pos()
+                        {
+                            seek = Some(
+                                ((p.x - origin.x - header) as f64 / beat_width as f64)
+                                    .clamp(0.0, self.project.length_bars as f64 * 4.0),
+                            );
+                        }
                         painter.rect_filled(rect, 12.0, BG);
                         painter.rect_filled(
                             Rect::from_min_size(origin, Vec2::new(rect.width(), 54.0)),
@@ -678,7 +711,7 @@ impl Studio {
                                 new_clip = Some((ti, beat));
                             }
                         }
-                        if self.playing() {
+                        {
                             let x = origin.x + header + self.position() as f32 * beat_width;
                             painter.line_segment(
                                 [Pos2::new(x, origin.y + 25.0), Pos2::new(x, rect.bottom())],
@@ -698,6 +731,10 @@ impl Studio {
                 if let Some((t, c)) = select {
                     self.selected_track = t;
                     self.selected_clip = c;
+                    self.sync_audio();
+                }
+                if let Some(beat) = seek {
+                    self.seek(beat);
                 }
                 if let Some((t, c, start)) = moved {
                     self.edit(|p| p.tracks[t].clips[c].start = start);

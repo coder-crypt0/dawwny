@@ -205,3 +205,63 @@ fn extreme_echo_racks_are_rejected_before_large_allocations() {
     }
     assert!(compile(&p, 192000).is_ok());
 }
+
+#[test]
+fn seek_chases_held_notes_and_live_mixing_does_not_rewind() {
+    let mut p = project();
+    p.tracks[0].clips[0].notes[0].duration = 4.0;
+    let mut r = Renderer::new(compile(&p, 16000).unwrap());
+    r.seek_beats(2.0);
+    assert_eq!(r.frame(), 16000);
+    assert!((0..500).any(|_| r.next_frame()[0].abs() > 0.001));
+    let position = r.frame();
+    p.tracks[0].mute = true;
+    r.update_mix(&p).unwrap();
+    assert_eq!(position, r.frame());
+    for _ in 0..2000 {
+        r.next_frame();
+    }
+    assert!(r.next_frame()[0].abs() < 0.0000001);
+    p.tracks[0].mute = false;
+    r.update_mix(&p).unwrap();
+    assert!((0..1000).any(|_| r.next_frame()[0].abs() > 0.001));
+    assert!(r.frame() > position);
+    r.seek_beats(f64::NAN);
+    assert_eq!(r.frame(), 0);
+}
+#[test]
+fn live_notes_sustain_and_release_without_advancing_the_arrangement() {
+    use dawwny_audio::LiveEvent;
+    let mut p = project();
+    p.tracks[0].clips.clear();
+    p.tracks[0].patch.release = 0.05;
+    let mut r = Renderer::new(compile(&p, 16000).unwrap());
+    r.live_event(LiveEvent::NoteOn {
+        channel: 0,
+        pitch: 60,
+        velocity: 0.8,
+    });
+    assert!((0..1600).any(|_| r.next_live_frame()[0].abs() > 0.001));
+    assert_eq!(r.frame(), 0);
+    r.live_event(LiveEvent::Sustain {
+        channel: 0,
+        down: true,
+    });
+    r.live_event(LiveEvent::NoteOff {
+        channel: 0,
+        pitch: 60,
+    });
+    for _ in 0..1600 {
+        r.next_live_frame();
+    }
+    assert!(r.has_live_voices());
+    r.live_event(LiveEvent::Sustain {
+        channel: 0,
+        down: false,
+    });
+    for _ in 0..1600 {
+        r.next_live_frame();
+    }
+    assert!(!r.has_live_voices());
+    assert_eq!(r.next_live_frame(), [0.0; 2]);
+}

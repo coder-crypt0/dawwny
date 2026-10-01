@@ -23,6 +23,8 @@ pub struct Studio {
     pub tab: EditorTab,
     pub editor_expanded: bool,
     pub looped: bool,
+    pub playhead: f64,
+    pub keyboard: crate::keyboard::KeyboardState,
     pub zoom: f32,
     pub fit_timeline: bool,
     pub piano_zoom: f32,
@@ -81,6 +83,8 @@ impl Studio {
             tab: EditorTab::Piano,
             editor_expanded: false,
             looped: true,
+            playhead: 0.0,
+            keyboard: crate::keyboard::KeyboardState::default(),
             zoom: 1.0,
             fit_timeline: true,
             piano_zoom: 1.0,
@@ -124,6 +128,7 @@ impl Studio {
             self.pending = Some(self.project.clone());
         }
         self.project = draft;
+        self.sync_audio();
         self.last_edit = Instant::now();
         self.status = "Editing • autosave pending".into();
         self.error = false;
@@ -151,7 +156,7 @@ impl Studio {
                     .ok();
                 self.status = format!("Saved locally • revision {}", self.project.revision);
                 self.error = false;
-                self.restart_playback();
+                self.sync_audio();
                 true
             }
             Err(e) => {
@@ -169,25 +174,40 @@ impl Studio {
         self.error = true;
     }
     pub fn stop(&mut self) {
-        if let Some(preview) = &mut self.preview {
-            preview.stop();
+        self.playhead = 0.0;
+        self.keyboard.held.fill(None);
+        if let Some(preview) = &mut self.preview
+            && let Err(e) = preview.stop()
+        {
+            self.status = format!("Preview stop failed: {e}");
+            self.error = true;
         }
-        if let Some(a) = &mut self.audio {
-            a.stop();
+        if let Some(a) = &mut self.audio
+            && let Err(e) = a.stop()
+        {
+            self.status = format!("Stop failed: {e}");
+            self.error = true;
         }
     }
     pub fn playing(&self) -> bool {
         self.audio.as_ref().is_some_and(|a| a.is_playing())
     }
     pub fn position(&self) -> f64 {
-        self.audio.as_ref().map_or(0.0, |a| a.position_beats())
+        self.audio
+            .as_ref()
+            .map_or(self.playhead, |a| a.position_beats())
     }
     pub fn toggle_play(&mut self) {
-        if let Some(preview) = &mut self.preview {
-            preview.stop();
+        if let Some(preview) = &mut self.preview
+            && let Err(e) = preview.stop()
+        {
+            self.status = format!("Preview stop failed: {e}");
+            self.error = true;
         }
         if self.playing() {
-            self.stop();
+            if let Some(audio) = &mut self.audio {
+                audio.pause();
+            }
             return;
         }
         if !self.commit() {
@@ -204,10 +224,23 @@ impl Studio {
             );
         }
     }
-    fn restart_playback(&mut self) {
-        if self.playing() {
-            self.stop();
-            self.toggle_play();
+    pub fn sync_audio(&mut self) {
+        if let Some(audio) = &mut self.audio
+            && let Err(e) = audio.update_project(&self.project, self.selected_track)
+        {
+            self.fail(format!("Audio update failed: {e}"));
+        }
+    }
+    pub fn seek(&mut self, beat: f64) {
+        if !beat.is_finite() {
+            return;
+        }
+        self.playhead = beat.clamp(0.0, self.project.length_bars as f64 * 4.0);
+        self.sync_audio();
+        if let Some(audio) = &mut self.audio
+            && let Err(e) = audio.seek_beats(self.playhead)
+        {
+            self.fail(format!("Seek failed: {e}"));
         }
     }
 
@@ -232,7 +265,7 @@ impl Studio {
                     self.clamp_selection();
                     self.status = if redo { "Edit restored" } else { "Edit undone" }.into();
                     self.error = false;
-                    self.restart_playback();
+                    self.sync_audio();
                 }
                 Err(e) => {
                     if redo {
@@ -467,9 +500,12 @@ impl Studio {
     }
 
     fn housekeeping(&mut self, ctx: &egui::Context) {
+        if let Some(audio) = &mut self.audio {
+            audio.collect_retired();
+        }
         if self.audio.as_ref().is_some_and(|a| a.device_failed()) && !self.error {
             self.fail(
-                "The audio output device stopped. Check the device and press Play to reconnect."
+                "The audio output device stopped. Check the device and restart the studio to reconnect."
                     .into(),
             );
         }
@@ -504,7 +540,7 @@ impl Studio {
                             self.project.revision
                         );
                         self.error = false;
-                        self.restart_playback();
+                        self.sync_audio();
                     }
                     Err(e) => self.fail(format!("Session update rejected: {e}")),
                     _ => {}
@@ -529,19 +565,22 @@ impl Studio {
                 Err(mpsc::TryRecvError::Empty) => {}
             }
         }
-        ctx.request_repaint_after(if self.playing() {
-            Duration::from_millis(33)
-        } else if self.pending.is_some() || self.export_job.is_some() {
-            Duration::from_millis(100)
-        } else {
-            Duration::from_millis(750)
-        });
+        ctx.request_repaint_after(
+            if self.playing() || self.audio.as_ref().is_some_and(|a| a.is_monitoring()) {
+                Duration::from_millis(33)
+            } else if self.pending.is_some() || self.export_job.is_some() {
+                Duration::from_millis(100)
+            } else {
+                Duration::from_millis(750)
+            },
+        );
     }
 }
 
 impl eframe::App for Studio {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.housekeeping(ctx);
+        self.keyboard_input(ctx);
         #[cfg(feature = "capture")]
         if let Ok(path) = std::env::var("DAWWNY_SCREENSHOT_PATH") {
             self.capture_frame += 1;
@@ -584,7 +623,10 @@ impl eframe::App for Studio {
                 ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
             }
         }
-        if !ctx.wants_keyboard_input() && ctx.input(|i| i.key_pressed(egui::Key::L)) {
+        if !ctx.wants_keyboard_input()
+            && !self.keyboard.open
+            && ctx.input(|i| i.key_pressed(egui::Key::L))
+        {
             self.show_library = !self.show_library;
         }
         if self.preview.as_ref().is_some_and(|p| p.is_playing()) {
@@ -621,13 +663,14 @@ impl eframe::App for Studio {
         if !self.editor_expanded {
             self.arrangement(ctx);
         }
+        self.keyboard_window(ctx);
         if self.show_help {
             egui::Window::new("Studio guide").open(&mut self.show_help).resizable(false).show(ctx,|ui|{
                 ui.label("Space — play / stop     Ctrl+S — save     Ctrl+Z / Ctrl+Y — undo / redo");
                 ui.label("Double-click an empty track lane to create a clip. Drag a clip to move it.");
                 ui.label("Select a clip, then click the piano grid to add a note. Drag notes to move them.");
                 ui.label("Right-click a note to edit its length, velocity, pitch, or delete it. Sound controls edit the selected track.");
-                ui.label("Edits autosave locally. Playback restarts when a committed edit changes the sound.");
+                ui.label("Edits autosave locally. Click or drag the ruler to seek. Space pauses and resumes. Ctrl+K opens musical typing.");
                 ui.separator();
                 ui.label("Foundation: fixed 4/4, built-in instruments and MIDI clips. Audio recording, VST3 hosting,");
                 ui.label("automation, hardware MIDI, and remote access are planned. No AI model is bundled.");
