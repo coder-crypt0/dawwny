@@ -27,3 +27,9 @@ The first 16 kHz pass rendered all 2,310 presets for six seconds each, with a th
 The full 48 kHz pass also passed for all 2,310 presets through each scheduled effect tail: maximum peak 0.121030, minimum whole-render RMS 0.001095, maximum absolute DC 0.000052. It completed in 188.91 seconds on the development machine. These are single-note checks at the documented audit gain, not stress tests of every chord, pitch, or user-edited patch.
 
 Automated checks catch silence, unsafe levels, exact audio duplicates and rendering errors. They do not establish pleasantness, mix translation, genre coverage, or subjective similarity. A systematic listening pass and broader musical tests remain necessary before calling the entire bank production-curated.
+
+## Instrument realism
+
+The current factory bank uses Dawn subtractive synthesis. The browser identifies this engine and marks each entry as a synth sound; the agent catalog exposes `engine` and `acoustic: false`. Category names such as Keys, Brass, or Strings describe arrangement roles. Some misleading acoustic names have been replaced while stable preset IDs remain unchanged.
+
+A realistic acoustic library requires actual multi-sampled instruments or dedicated physical models, including velocity layers, articulations, release behavior and proper sample mapping. More oscillator/filter variations alone cannot deliver sampled piano, guitar, or orchestral realism. Native sample-instrument import is the next sound-engine milestone; the present bank is not advertised as a professionally auditioned acoustic collection.

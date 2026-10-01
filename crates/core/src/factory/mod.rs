@@ -29,6 +29,8 @@ pub struct SoundInfo {
     pub tags: Vec<String>,
     pub description: String,
     pub audition_pitch: u8,
+    pub engine: &'static str,
+    pub acoustic: bool,
 }
 const COLORS: [&str; 8] = [
     "Core", "Warm", "Bright", "Soft", "Focused", "Hollow", "Vivid", "Velvet",
@@ -61,7 +63,7 @@ pub fn sound_catalog() -> &'static [SoundInfo] {
     CATALOG.get_or_init(|| {
         let mut sounds = Vec::with_capacity(2310);
         for (preset,category) in crate::sound_presets().into_iter().zip(["Keys","Pad","Bass","Bell","Pluck","Texture"]) {
-            sounds.push(SoundInfo{id:preset.id,name:preset.name,family:"Signature".into(),category:category.into(),tags:vec!["signature".into()],description:preset.description,audition_pitch:pitch(category)});
+            sounds.push(SoundInfo{id:preset.id,name:preset.name,family:"Signature".into(),category:category.into(),tags:vec!["signature".into()],description:preset.description,audition_pitch:pitch(category),engine:"Dawn subtractive synth",acoustic:false});
         }
         for family in FAMILIES {
             for (color,cname) in COLORS.iter().enumerate() {
@@ -72,7 +74,7 @@ pub fn sound_catalog() -> &'static [SoundInfo] {
                         family:family.name.into(),category:family.category.into(),
                         tags:vec![family.tag.into(),cname.to_lowercase(),sname.to_lowercase(),"synthesized".into()],
                         description:format!("{} {} voice, {} articulation with {} space. Fully editable Dawn synthesis.",family.tag,family.category.to_lowercase(),cname.to_lowercase(),sname.to_lowercase()),
-                        audition_pitch:pitch(family.category),
+                        audition_pitch:pitch(family.category),engine:"Dawn subtractive synth",acoustic:false,
                     });
                 }
             }
