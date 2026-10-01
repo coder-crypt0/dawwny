@@ -33,7 +33,10 @@ pub fn export_midi(project: &Project, path: &Path) -> Result<()> {
     ]];
     let mut melodic = 0;
     for track in &project.tracks {
-        let channel = if track.instrument == Instrument::Drums {
+        let channel = if track.instrument == Instrument::Drums
+            || (track.instrument == Instrument::Sampler
+                && track.patch.sample.as_ref().is_some_and(|s| s.bank == 128))
+        {
             9
         } else {
             let n = melodic % 15;
@@ -48,6 +51,7 @@ pub fn export_midi(project: &Project, path: &Path) -> Result<()> {
             Instrument::Lead => 81,
             Instrument::Drums => 0,
             Instrument::Synth => 81,
+            Instrument::Sampler => track.patch.sample.as_ref().map_or(0, |s| s.program),
         };
         let mut events = vec![];
         for clip in &track.clips {
@@ -83,6 +87,26 @@ pub fn export_midi(project: &Project, path: &Path) -> Result<()> {
                 },
             },
         ];
+        if track.instrument == Instrument::Sampler {
+            let bank = track.patch.sample.as_ref().unwrap().bank;
+            // Bank 128 is represented by the percussion channel; melodic banks use bank select.
+            let bank = if bank == 128 { 0 } else { bank };
+            for (controller, value) in [(0, bank as u8), (32, 0)] {
+                out.insert(
+                    1,
+                    TrackEvent {
+                        delta: 0.into(),
+                        kind: TrackEventKind::Midi {
+                            channel,
+                            message: MidiMessage::Controller {
+                                controller: u7::new(controller),
+                                value: u7::new(value),
+                            },
+                        },
+                    },
+                );
+            }
+        }
         let mut last = 0;
         for (at, on, pitch, velocity) in events {
             out.push(TrackEvent {

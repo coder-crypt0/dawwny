@@ -97,7 +97,7 @@ impl Runtime {
             }
         }
         if self.monitor.has_live_voices() {
-            self.tail = self.monitor.total_frames();
+            self.tail = self.monitor.tail_frames().max(128);
         }
         if self.tail > 0 {
             let live = self.monitor.next_live_frame();

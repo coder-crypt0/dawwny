@@ -78,6 +78,7 @@ pub fn instrument_name(i: Instrument) -> &'static str {
         Instrument::Bass => "Bass",
         Instrument::Lead => "Lead",
         Instrument::Drums => "Drums",
+        Instrument::Sampler => "Sample instrument",
     }
 }
 fn color(c: [u8; 3]) -> Color32 {

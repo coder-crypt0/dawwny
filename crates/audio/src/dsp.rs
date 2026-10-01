@@ -1,5 +1,6 @@
 use crate::{
     fx::{Rack, storage_bytes, tail_seconds},
+    sampler::{SAMPLE_VOICES_PER_TRACK, Sampler, load_sample_bank},
     synth::{CompiledSynth, SynthVoice},
 };
 use anyhow::{Result, ensure};
@@ -104,15 +105,25 @@ struct Channel {
     synth: CompiledSynth,
     rack: [Option<dawwny_core::EffectSlot>; 8],
 }
-#[derive(Clone, Debug)]
 pub struct RenderPlan {
     events: Vec<Event>,
     tracks: Vec<Channel>,
+    samplers: Vec<Option<Sampler>>,
     pub sample_rate: u32,
     pub song_frames: u64,
     pub total_frames: u64,
     pub tempo: f64,
     mix: MixSnapshot,
+}
+impl std::fmt::Debug for RenderPlan {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RenderPlan")
+            .field("events", &self.events.len())
+            .field("tracks", &self.tracks.len())
+            .field("sample_rate", &self.sample_rate)
+            .field("song_frames", &self.song_frames)
+            .finish()
+    }
 }
 impl RenderPlan {
     pub fn event_count(&self) -> usize {
@@ -136,17 +147,43 @@ pub fn compile(project: &Project, sample_rate: u32) -> Result<RenderPlan> {
     validate(project)?;
     ensure!(
         (8_000..=192_000).contains(&sample_rate),
-        "Supported sample rates: 8000–192000 Hz"
+        "Supported sample rates: 8000Ã¢â‚¬â€œ192000 Hz"
     );
     let spb = sample_rate as f64 * 60.0 / project.tempo;
     let song_frames = (project.length_bars as f64 * 4.0 * spb).round() as u64;
     let mut tracks = vec![];
+    let mut samplers = vec![];
+    let sample_tracks = project
+        .tracks
+        .iter()
+        .filter(|t| t.instrument == Instrument::Sampler)
+        .count();
+    let sample_polyphony = (512 / sample_tracks.max(1)).clamp(8, SAMPLE_VOICES_PER_TRACK);
     let mut events = vec![];
     let mut tail = 0.05f32;
     let mut effect_storage = 0;
     for track in &project.tracks {
         let index = tracks.len();
         let patch = &track.patch;
+        let sampler = if track.instrument == Instrument::Sampler {
+            ensure!(
+                sample_rate >= 16000,
+                "Sample instruments require 16000–192000 Hz"
+            );
+            let config = patch.sample.as_ref().expect("Validated sample instrument");
+            Some(Sampler::new(
+                load_sample_bank(Path::new(&config.file))?,
+                config,
+                sample_rate,
+                sample_polyphony,
+            )?)
+        } else {
+            None
+        };
+        let sample_release = sampler
+            .as_ref()
+            .map_or(patch.release, |s| s.release_seconds());
+        samplers.push(sampler);
         let angle = (track.pan + 1.0) * FRAC_PI_4;
         effect_storage += storage_bytes(&patch.effects, sample_rate, project.tempo);
         if patch.delay > 0.0 {
@@ -166,7 +203,7 @@ pub fn compile(project: &Project, sample_rate: u32) -> Result<RenderPlan> {
             attack: patch.attack * sample_rate as f32,
             decay: patch.decay * sample_rate as f32,
             sustain: patch.sustain,
-            release: patch.release * sample_rate as f32,
+            release: sample_release * sample_rate as f32,
             filter: 1.0
                 - (-TAU * patch.cutoff.min(sample_rate as f32 * 0.45) / sample_rate as f32).exp(),
             reverb: patch.reverb,
@@ -175,7 +212,7 @@ pub fn compile(project: &Project, sample_rate: u32) -> Result<RenderPlan> {
             rack: std::array::from_fn(|i| patch.effects.get(i).copied()),
         });
         tail = tail.max(
-            patch.release
+            sample_release
                 + tail_seconds(&patch.effects, project.tempo)
                 + if patch.reverb > 0.0 || patch.delay > 0.0 {
                     3.0
@@ -204,6 +241,7 @@ pub fn compile(project: &Project, sample_rate: u32) -> Result<RenderPlan> {
     Ok(RenderPlan {
         events,
         tracks,
+        samplers,
         sample_rate,
         song_frames,
         total_frames: song_frames + (tail * sample_rate as f32).ceil() as u64,
@@ -230,6 +268,8 @@ struct Voice {
     live: bool,
     source: u8,
     key_down: bool,
+    sample_lane: u8,
+    sample_released: bool,
 }
 fn envelope(age: f32, c: &Channel) -> f32 {
     if age < c.attack {
@@ -261,7 +301,9 @@ impl Voice {
             return output * env * self.velocity;
         }
         let signal = match c.instrument {
-            Instrument::Synth => unreachable!("Dawn synth handled above"),
+            Instrument::Synth | Instrument::Sampler => {
+                unreachable!("Dedicated instrument handled above")
+            }
             Instrument::Keys => {
                 (self.phase.sin() + 0.22 * (self.phase * 2.0).sin() * (-seconds * 3.0).exp())
                     * (-seconds * 0.7).exp()
@@ -363,17 +405,18 @@ impl Effects {
             }),
         }
     }
-    fn process(&mut self, input: f32, c: &Channel) -> [f32; 2] {
-        let echo = self.delay.as_mut().map_or(0.0, |d| d.process(input, 0.34)) * c.delay * 0.5;
+    fn process(&mut self, input: [f32; 2], c: &Channel) -> [f32; 2] {
+        let mono = (input[0] + input[1]) * 0.5;
+        let echo = self.delay.as_mut().map_or(0.0, |d| d.process(mono, 0.34)) * c.delay * 0.5;
         let mut wet = [0.0; 2];
         if let Some(combs) = &mut self.reverb {
             for (i, comb) in combs.iter_mut().enumerate() {
-                wet[i % 2] += comb.process(input, 0.68 - i as f32 * 0.025) * 0.2 * c.reverb;
+                wet[i % 2] += comb.process(mono, 0.68 - i as f32 * 0.025) * 0.2 * c.reverb;
             }
         }
         self.rack.process([
-            (input + echo) * c.pan[0] + wet[0],
-            (input + echo) * c.pan[1] + wet[1],
+            (input[0] + echo) * c.pan[0] + wet[0],
+            (input[1] + echo) * c.pan[1] + wet[1],
         ])
     }
 }
@@ -382,6 +425,7 @@ pub struct Renderer {
     plan: RenderPlan,
     voices: [Voice; VOICE_LIMIT],
     effects: Vec<Effects>,
+    samplers: Vec<Option<Sampler>>,
     cursor: usize,
     frame: u64,
     stolen: u64,
@@ -391,7 +435,7 @@ pub struct Renderer {
     smoothing: f32,
 }
 impl Renderer {
-    pub fn new(plan: RenderPlan) -> Self {
+    pub fn new(mut plan: RenderPlan) -> Self {
         let mix = plan.mix;
         let smoothing = 1.0 - (-1.0 / (plan.sample_rate as f32 * 0.005)).exp();
         let effects = plan
@@ -399,8 +443,10 @@ impl Renderer {
             .iter()
             .map(|c| Effects::new(c, plan.sample_rate, plan.tempo))
             .collect();
+        let samplers = std::mem::take(&mut plan.samplers);
         Self {
             plan,
+            samplers,
             voices: [Voice::default(); VOICE_LIMIT],
             effects,
             cursor: 0,
@@ -426,6 +472,9 @@ impl Renderer {
     pub fn total_frames(&self) -> u64 {
         self.plan.total_frames
     }
+    pub fn tail_frames(&self) -> u64 {
+        self.plan.total_frames - self.plan.song_frames
+    }
     pub fn stolen_voices(&self) -> u64 {
         self.stolen
     }
@@ -433,6 +482,9 @@ impl Renderer {
         self.cursor = 0;
         self.frame = 0;
         self.voices.fill(Voice::default());
+        for sampler in self.samplers.iter_mut().flatten() {
+            sampler.clear();
+        }
         self.fade_age = 0;
     }
     /// Chase notes crossing the new position. Effects start from the prepared renderer's state.
@@ -445,14 +497,24 @@ impl Renderer {
         self.frame = (target.round() as u64).min(self.plan.song_frames);
         self.cursor = self.plan.events.partition_point(|e| e.frame < self.frame);
         self.voices.fill(Voice::default());
+        for sampler in self.samplers.iter_mut().flatten() {
+            sampler.clear();
+        }
         self.fade_age = 0;
         for i in 0..self.cursor {
             let event = self.plan.events[i];
             let age = self.frame - event.frame;
             let release = self.plan.tracks[event.track].release as u64;
             if age < event.gate.saturating_add(release) {
-                let index = self.voice_slot();
-                self.voices[index] = Self::event_voice(event, age, i as u32);
+                if self.samplers[event.track].is_some() {
+                    if age < event.gate {
+                        let mut remaining = event;
+                        remaining.gate -= age;
+                        self.start_voice(Self::event_voice(remaining, 0, i as u32));
+                    }
+                } else {
+                    self.start_voice(Self::event_voice(event, age, i as u32));
+                }
             }
         }
     }
@@ -484,6 +546,48 @@ impl Renderer {
                     .map_or(0, |(i, _)| i)
             })
     }
+    fn start_voice(&mut self, mut voice: Voice) {
+        let index = self.voice_slot();
+        let old = self.voices[index];
+        if old.active && !old.sample_released {
+            if let Some(sampler) = &mut self.samplers[old.track] {
+                sampler.off(old.sample_lane, old.pitch);
+            }
+        }
+        if self.samplers[voice.track].is_some() {
+            // Separate lanes prevent one overlapping note-off from releasing another same-pitch note.
+            let lane = (0..16)
+                .find(|lane| {
+                    !self.voices.iter().enumerate().any(|(i, v)| {
+                        i != index
+                            && v.active
+                            && !v.sample_released
+                            && v.track == voice.track
+                            && v.pitch == voice.pitch
+                            && v.sample_lane == *lane
+                    })
+                })
+                .unwrap_or(0);
+            for (i, v) in self.voices.iter_mut().enumerate() {
+                if i != index
+                    && v.active
+                    && !v.sample_released
+                    && v.track == voice.track
+                    && v.pitch == voice.pitch
+                    && v.sample_lane == lane
+                {
+                    v.gate = v.age;
+                    v.sample_released = true;
+                    self.stolen += 1;
+                }
+            }
+            let sampler = self.samplers[voice.track].as_mut().unwrap();
+            sampler.off(lane, voice.pitch);
+            sampler.on(lane, voice.pitch, voice.velocity);
+            voice.sample_lane = lane;
+        }
+        self.voices[index] = voice;
+    }
     pub fn update_mix(&mut self, project: &Project) -> Result<()> {
         validate(project)?;
         ensure!(
@@ -503,6 +607,9 @@ impl Renderer {
             LiveEvent::AllOff => {
                 self.voices.fill(Voice::default());
                 self.sustain.fill(false);
+                for sampler in self.samplers.iter_mut().flatten() {
+                    sampler.clear();
+                }
             }
             LiveEvent::NoteOn {
                 channel,
@@ -516,8 +623,7 @@ impl Renderer {
                 && !self.plan.tracks.is_empty() =>
             {
                 self.live_event(LiveEvent::NoteOff { channel, pitch });
-                let i = self.voice_slot();
-                self.voices[i] = Voice {
+                self.start_voice(Voice {
                     active: true,
                     live: true,
                     source: channel,
@@ -529,7 +635,7 @@ impl Renderer {
                         / self.plan.sample_rate as f32,
                     random: 0x1234567u32.wrapping_add(pitch as u32 * 73),
                     ..Default::default()
-                };
+                });
             }
             LiveEvent::NoteOff { channel, pitch } if channel <= 16 => {
                 for voice in &mut self.voices {
@@ -573,8 +679,7 @@ impl Renderer {
         {
             let e = self.plan.events[self.cursor];
             self.cursor += 1;
-            let index = self.voice_slot();
-            self.voices[index] = Self::event_voice(e, 0, self.cursor as u32);
+            self.start_voice(Self::event_voice(e, 0, self.cursor as u32));
         }
         let mut output = self.mix_voices();
         self.frame += 1;
@@ -603,15 +708,34 @@ impl Renderer {
             self.plan.tracks[i].pan = current.pan;
         }
         self.mix.master += (self.plan.mix.master - self.mix.master) * smoothing;
-        let mut channels = [0.0f32; 32];
+        let mut channels = [[0.0f32; 2]; 32];
         for voice in &mut self.voices {
             if voice.active {
                 let c = &self.plan.tracks[voice.track];
-                channels[voice.track] += voice.sample(c, self.plan.sample_rate as f32) * c.gain;
+                if let Some(sampler) = &mut self.samplers[voice.track] {
+                    if voice.age >= voice.gate && !voice.sample_released {
+                        sampler.off(voice.sample_lane, voice.pitch);
+                        voice.sample_released = true;
+                    }
+                    if voice.age >= voice.gate.saturating_add(c.release as u64) {
+                        voice.active = false;
+                    }
+                    voice.age = voice.age.saturating_add(1);
+                } else {
+                    let sample = voice.sample(c, self.plan.sample_rate as f32) * c.gain;
+                    channels[voice.track][0] += sample;
+                    channels[voice.track][1] += sample;
+                }
             }
         }
         let mut output = [0.0f32; 2];
         for (i, effects) in self.effects.iter_mut().enumerate() {
+            if let Some(sampler) = &mut self.samplers[i] {
+                let frame = sampler.frame();
+                for (sample, value) in channels[i].iter_mut().zip(frame) {
+                    *sample += value * self.plan.tracks[i].gain;
+                }
+            }
             let mixed = effects.process(channels[i], &self.plan.tracks[i]);
             output[0] += mixed[0] * self.mix.tracks[i].audible;
             output[1] += mixed[1] * self.mix.tracks[i].audible;

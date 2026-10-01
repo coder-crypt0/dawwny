@@ -56,6 +56,17 @@ pub enum Instrument {
     Lead,
     Drums,
     Synth,
+    Sampler,
+}
+
+/// External SF2 samples stay outside the project and executable.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct SampleInstrument {
+    pub file: String,
+    pub bank: u16,
+    /// Zero-based MIDI program, 0–127. Bank 128 is percussion.
+    pub program: u8,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
@@ -72,6 +83,8 @@ pub struct SynthPatch {
     pub synth: CustomSynth,
     #[serde(default)]
     pub effects: Vec<EffectSlot>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sample: Option<SampleInstrument>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
@@ -128,6 +141,10 @@ pub enum Command {
         track_id: String,
         preset_id: String,
     },
+    SetSampleInstrument {
+        track_id: String,
+        sample: SampleInstrument,
+    },
     UpdateTrack {
         track_id: String,
         name: Option<String>,
@@ -174,6 +191,7 @@ impl Default for SynthPatch {
             delay: 0.0,
             synth: CustomSynth::default(),
             effects: Vec::new(),
+            sample: None,
         }
     }
 }
