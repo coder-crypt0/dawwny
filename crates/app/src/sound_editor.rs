@@ -96,7 +96,7 @@ pub fn show(ui: &mut egui::Ui, track: &mut Track) {
                 format!("Effects / {}", track.patch.effects.len()),
             );
             ui.separator();
-            caption(ui, "Edits autosave. Active playback restarts when saved.");
+            caption(ui, "Edits autosave. Playback keeps its musical position.");
         });
         ui.data_mut(|d| d.insert_temp(id, effects));
         ui.separator();

@@ -222,7 +222,7 @@ impl Studio {
                         ui.horizontal(|ui| {
                             if ui.button("▶ Preview").clicked(){preview=Some(info.id.clone());}
                             if ui.button("Use sound").clicked(){load=Some(info.id.clone());}
-                            if self.preview.as_ref().is_some_and(|p|p.is_playing()) && ui.button("■").clicked(){self.preview.as_mut().unwrap().stop();}
+                            if self.preview.as_ref().is_some_and(|p|p.is_playing()) && ui.button("■").clicked()&& let Err(e)=self.preview.as_mut().unwrap().stop(){self.status=format!("Preview stop failed: {e}");self.error=true;}
                         });
                     }else{ui.label(egui::RichText::new("Select a sound to preview it. Double-click to use it on the selected track.").small().weak());}
                     if let Some(error)=&self.library.error{ui.colored_label(Color32::LIGHT_RED,error);}
