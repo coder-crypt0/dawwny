@@ -65,10 +65,12 @@ pub fn load_sample_bank(path: &Path) -> Result<Arc<SampleBank>> {
         .map_err(|_| anyhow::anyhow!("Sample cache unavailable"))?;
     cache.retain(|entry| entry.bank.strong_count() > 0);
     for entry in cache.iter() {
-        if entry.file == file && entry.modified == modified && entry.length == metadata.len() {
-            if let Some(bank) = entry.bank.upgrade() {
-                return Ok(bank);
-            }
+        if entry.file == file
+            && entry.modified == modified
+            && entry.length == metadata.len()
+            && let Some(bank) = entry.bank.upgrade()
+        {
+            return Ok(bank);
         }
     }
     let estimate = preflight(&mut reader, metadata.len())?;

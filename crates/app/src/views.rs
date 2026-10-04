@@ -461,7 +461,8 @@ impl Studio {
                                 ui.id().with("playhead_ruler"),
                                 Sense::click_and_drag(),
                             )
-                            .on_hover_text("Click or drag to move the playhead");
+                            .on_hover_text("Click or drag to move the playhead")
+                            .on_hover_cursor(egui::CursorIcon::PointingHand);
                         if (ruler_response.clicked() || ruler_response.dragged())
                             && let Some(p) = ruler_response.interact_pointer_pos()
                         {
@@ -516,6 +517,7 @@ impl Studio {
                                 );
                             }
                         }
+                        let any_solo = self.project.tracks.iter().any(|track| track.solo);
                         let mut clip_hit = false;
                         for (ti, track) in self.project.tracks.iter().enumerate() {
                             let y = origin.y + 54.0 + ti as f32 * row_h;
@@ -535,6 +537,7 @@ impl Studio {
                                 Stroke::new(1.0_f32, LINE),
                             );
                             let c = color(track.color);
+                            let inaudible = track.mute || (any_solo && !track.solo);
                             painter.rect_filled(
                                 Rect::from_min_size(
                                     row.min + Vec2::new(0.0, 11.0),
@@ -572,7 +575,16 @@ impl Studio {
                                     row.min + Vec2::new(header - 61.0 + j as f32 * 27.0, 31.0),
                                     Vec2::new(22.0, 23.0),
                                 );
-                                painter.rect_filled(r, 4.0, if active { ACCENT } else { LINE });
+                                let active_color = if j == 0 {
+                                    Color32::from_rgb(235, 186, 111)
+                                } else {
+                                    ACCENT
+                                };
+                                painter.rect_filled(
+                                    r,
+                                    6.0,
+                                    if active { active_color } else { LINE },
+                                );
                                 painter.text(
                                     r.center(),
                                     Align2::CENTER_CENTER,
@@ -581,7 +593,13 @@ impl Studio {
                                     if active { BG } else { MUTED },
                                 );
                                 if ui
-                                    .interact(r, ui.id().with(("mix", ti, j)), Sense::click())
+                                    .interact(
+                                        r.expand(2.0),
+                                        ui.id().with(("mix", ti, j)),
+                                        Sense::click(),
+                                    )
+                                    .on_hover_text(if j == 0 { "Mute track" } else { "Solo track" })
+                                    .on_hover_cursor(egui::CursorIcon::PointingHand)
                                     .clicked()
                                 {
                                     mix = Some((ti, j, !active));
@@ -602,7 +620,7 @@ impl Studio {
                                 painter.rect_filled(
                                     r,
                                     9.0,
-                                    c.gamma_multiply(if track.mute { 0.18 } else { 0.32 }),
+                                    c.gamma_multiply(if inaudible { 0.18 } else { 0.32 }),
                                 );
                                 painter.rect_filled(
                                     Rect::from_min_size(r.min, Vec2::new(r.width(), 19.0)),
@@ -612,7 +630,7 @@ impl Studio {
                                         sw: 2,
                                         se: 2,
                                     },
-                                    c.gamma_multiply(if track.mute { 0.4 } else { 0.78 }),
+                                    c.gamma_multiply(if inaudible { 0.4 } else { 0.78 }),
                                 );
                                 if sel {
                                     painter.rect_stroke(
@@ -714,6 +732,14 @@ impl Studio {
                         }
                         {
                             let x = origin.x + header + self.position() as f32 * beat_width;
+                            painter.rect_filled(
+                                Rect::from_center_size(
+                                    Pos2::new(x, origin.y + 28.5),
+                                    Vec2::new(10.0, 7.0),
+                                ),
+                                3.0,
+                                ACCENT,
+                            );
                             painter.line_segment(
                                 [Pos2::new(x, origin.y + 25.0), Pos2::new(x, rect.bottom())],
                                 Stroke::new(1.5_f32, ACCENT),

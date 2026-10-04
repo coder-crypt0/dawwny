@@ -147,7 +147,7 @@ pub fn compile(project: &Project, sample_rate: u32) -> Result<RenderPlan> {
     validate(project)?;
     ensure!(
         (8_000..=192_000).contains(&sample_rate),
-        "Supported sample rates: 8000Ã¢â‚¬â€œ192000 Hz"
+        "Supported sample rates: 8000-192000 Hz"
     );
     let spb = sample_rate as f64 * 60.0 / project.tempo;
     let song_frames = (project.length_bars as f64 * 4.0 * spb).round() as u64;
@@ -549,10 +549,11 @@ impl Renderer {
     fn start_voice(&mut self, mut voice: Voice) {
         let index = self.voice_slot();
         let old = self.voices[index];
-        if old.active && !old.sample_released {
-            if let Some(sampler) = &mut self.samplers[old.track] {
-                sampler.off(old.sample_lane, old.pitch);
-            }
+        if old.active
+            && !old.sample_released
+            && let Some(sampler) = &mut self.samplers[old.track]
+        {
+            sampler.off(old.sample_lane, old.pitch);
         }
         if self.samplers[voice.track].is_some() {
             // Separate lanes prevent one overlapping note-off from releasing another same-pitch note.
