@@ -111,6 +111,7 @@ pub fn sound_preset(id: &str) -> Option<SoundPreset> {
     let detune = [2.0, 7.0, -9.0, 14.0, -5.0, 11.0][family_index % 6];
     let pulse_width = [0.5, 0.3, 0.22, 0.42, 0.16, 0.65][family_index % 6];
     let mut patch = SynthPatch {
+        sample: None,
         attack: f.adsr[0],
         decay: f.adsr[1],
         sustain: f.adsr[2],

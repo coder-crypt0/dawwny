@@ -4,7 +4,7 @@
 
 [![Native workspace](https://github.com/coder-crypt0/dawwny/actions/workflows/ci.yml/badge.svg)](https://github.com/coder-crypt0/dawwny/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-94ad68)](LICENSE)
 
-Compose in a native arrangement editor or connect your own AI through MCP. Both edit the same musical document. Rust synthesizers turn it into sound, with no Electron, Chromium, WebView, bundled model, cloud account, or sample-library download.
+Compose in a native arrangement editor or connect your own AI through MCP. Both edit the same musical document. Rust synthesizers turn it into sound, with no Electron, Chromium, WebView, bundled model, cloud account, or mandatory sample-library download.
 
 **v0.1 is a working native prototype for MIDI composition.** It is not yet a full replacement for Logic Pro or another production DAW. Native plugins, recording, audio tracks, automation, and remote access are on the roadmap.
 
@@ -58,7 +58,7 @@ Edits save locally after a short debounce. Space pauses/resumes at the current p
 
 ## Built to stay small
 
-The UI draws natively through egui/Glow. CPAL owns audio output. The engine compiles notes into event metadata and streams samples through a fixed 128-voice pool, with bounded delay/reverb buffers. The UI repaints on interaction, at about 30 Hz during playback, and polls for agent edits when idle. The separate MCP executable only runs when a client starts it.
+The UI draws natively through egui/Glow. CPAL owns audio output. The engine compiles notes into event metadata and streams samples through a fixed 128-voice pool, with bounded delay/reverb buffers. Optional SF2 instruments use shared sample banks and bounded layer voices. The UI repaints on interaction, at about 30 Hz during playback, and polls for agent edits when idle. The separate MCP executable only runs when a client starts it.
 
 Release binaries are single-digit MiB. A dedicated test counts allocations and frees inside the sample loop and requires zero. Exact measured baselines and their limits are documented as part of each release; development caches are separate from the distributed app.
 
@@ -92,3 +92,5 @@ No hosting is configured. Future remote control will use Hostinger when that par
 ## License
 
 [MIT](LICENSE). Third-party crates retain their own licenses.
+
+Sampled instruments: [native SoundFont import and optional piano/orchestral/guitar/drum bank](docs/sample-instruments.md).

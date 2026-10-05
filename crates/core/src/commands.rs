@@ -69,6 +69,11 @@ pub fn apply_commands(p: &Project, commands: &[Command]) -> Result<Project> {
                     t.patch = v.clone()
                 }
             }
+            Command::SetSampleInstrument { track_id, sample } => {
+                let track = track_mut(&mut n, track_id)?;
+                track.instrument = Instrument::Sampler;
+                track.patch.sample = Some(sample.clone());
+            }
             Command::AddClip { track_id, clip } => {
                 track_mut(&mut n, track_id)?.clips.push(clip.clone())
             }

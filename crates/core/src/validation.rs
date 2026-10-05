@@ -67,6 +67,25 @@ pub fn validate(p: &Project) -> Result<()> {
         range(t.gain, 0.0, 1.0, "Track gain")?;
         range(t.pan, -1.0, 1.0, "Pan")?;
         let s = &t.patch;
+        ensure!(
+            t.instrument != Instrument::Sampler || s.sample.is_some(),
+            "Sample instrument needs an SF2 file, bank and program"
+        );
+        if let Some(sample) = &s.sample {
+            ensure!(
+                sample.bank <= 128 && sample.program <= 127,
+                "SF2 bank must be 0–128; program must be 0–127"
+            );
+            ensure!(
+                sample.file.len() <= 4096
+                    && !sample.file.chars().any(char::is_control)
+                    && std::path::Path::new(&sample.file).is_absolute()
+                    && std::path::Path::new(&sample.file)
+                        .extension()
+                        .is_some_and(|s| s.eq_ignore_ascii_case("sf2")),
+                "Sample file must be an absolute local .sf2 path (maximum 4096 bytes)"
+            );
+        }
         crate::sound::validate_sound(s)?;
         range(s.attack, 0.001, 5.0, "Attack")?;
         range(s.decay, 0.001, 5.0, "Decay")?;

@@ -31,7 +31,8 @@ fn wave_name(w: Waveform) -> &'static str {
     }
 }
 
-pub fn show(ui: &mut egui::Ui, track: &mut Track) {
+pub fn show(ui: &mut egui::Ui, track: &mut Track, bank: Option<&dawwny_audio::SampleBank>) -> bool {
+    let mut open_samples = false;
     let track_id = track.id.clone();
     ui.push_id(track_id, |ui| {
         ui.spacing_mut().slider_width = 105.0;
@@ -102,6 +103,17 @@ pub fn show(ui: &mut egui::Ui, track: &mut Track) {
         ui.separator();
         if effects {
             rack(ui, &mut track.patch);
+        } else if track.instrument == Instrument::Sampler {
+            if let Some(sample) = &track.patch.sample {
+                let preset = bank.filter(|b| b.file == std::path::Path::new(&sample.file)).and_then(|b| b.presets.iter().find(|p|p.bank == sample.bank && p.program == sample.program));
+                ui.heading(preset.map_or("Sample instrument",|p|p.name.as_str()));
+                caption(ui, &format!("SF2 · Bank {} · Program {}",sample.bank,sample.program));
+                ui.label(std::path::Path::new(&sample.file).file_name().unwrap_or_default().to_string_lossy());
+                ui.label("Uses the bank's recorded samples, velocity layers, envelopes and filter. Shape the result with your effects rack.");
+                if ui.button("Choose another sample preset…").clicked() {open_samples=true;}
+                slider(ui,&mut track.gain,0.0..=1.0,"Output");
+                slider(ui,&mut track.pan,-1.0..=1.0,"Pan");
+            }
         } else {
             // At small widths each block receives its own row, so labels never overlap.
             if ui.available_width() >= 840.0 {
@@ -119,6 +131,7 @@ pub fn show(ui: &mut egui::Ui, track: &mut Track) {
             }
         }
     });
+    open_samples
 }
 fn oscillators(ui: &mut egui::Ui, track: &mut Track) {
     if track.instrument != Instrument::Synth {

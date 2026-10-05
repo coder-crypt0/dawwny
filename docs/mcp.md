@@ -12,13 +12,13 @@ dawwny-mcp --project sessions/untitled.dawwny.json --export-dir exports
 
 Both arguments are optional. The project defaults to
 `sessions/untitled.dawwny.json`; exports default to `exports`. Paths are
-selected when the process starts. MCP tool arguments never choose arbitrary
-filesystem paths.
+selected when the process starts. SF2 inspection accepts an explicitly provided absolute `.sf2` path with bounded loading. Export paths remain fixed at startup.
 
 ## Tools
 
 - `list_sounds` searches the 2,310-entry Dawn catalog across 12 categories. Results contain lightweight preset metadata; optionally pass `query`, `category`, `offset`, and `limit` (1–100). The response includes `total`, the current `offset`, and `next_offset` when another page exists. The catalog comprises 72 families × 32 generated variations plus six signature presets; this is a recipe count, not a claim that every patch was professionally auditioned.
 - `get_sound` takes a stable `preset_id` returned by `list_sounds` and returns the complete editable patch. Use the preset tool or update a track to load it. [Sound workflow](sound-design.md).
+- `list_sample_presets` inspects actual preset metadata in a supplied local SF2 bank, with search and pagination. Use `set_sample_instrument` through `apply_commands` to choose a valid bank/program. [Sample workflow](sample-instruments.md).
 - `read_project` returns the complete project document and its revision.
 - `apply_commands` applies a list of typed musical commands only when
   `expected_revision` equals the stored revision. A stale request fails with a

@@ -41,3 +41,5 @@ Example agent request: “Read this session, add a soft bass line following the 
 ## Current boundaries
 
 This is a MIDI composition prototype, not a full Logic Pro replacement. Native plugin hosting, sample/audio tracks, recording, input recording and controller mapping, automation lanes, tempo maps, plugin delay compensation, per-note expression, stems, and remote collaboration are future milestones. It has no network listener and no site deployment. Hostinger will be considered when remote access is implemented.
+
+**Sample instruments:** in Sounds, open Sample instruments, import a local SF2, search its actual names and use a preset. Ctrl+K auditions it. [Installation and agent workflow](sample-instruments.md).
