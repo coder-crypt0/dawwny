@@ -2,12 +2,7 @@ use crate::studio::{EditorTab, Studio};
 use dawwny_core::{Instrument, Note, Project};
 use eframe::egui::{self, Align2, Color32, FontId, Pos2, Rect, Sense, Stroke, StrokeKind, Vec2};
 
-const BG: Color32 = Color32::from_rgb(21, 23, 27);
-const PANEL: Color32 = Color32::from_rgb(28, 30, 35);
-const LINE: Color32 = Color32::from_rgb(47, 50, 57);
-const TEXT: Color32 = Color32::from_rgb(226, 230, 232);
-const MUTED: Color32 = Color32::from_rgb(140, 148, 159);
-const ACCENT: Color32 = Color32::from_rgb(203, 231, 143);
+use crate::design::*;
 
 pub fn theme(ctx: &egui::Context) {
     let mut style = (*ctx.style()).clone();
@@ -16,14 +11,12 @@ pub fn theme(ctx: &egui::Context) {
     style.visuals.window_fill = PANEL;
     style.visuals.extreme_bg_color = Color32::from_rgb(17, 19, 22);
     style.visuals.override_text_color = Some(TEXT);
-    style.visuals.selection.bg_fill = Color32::from_rgb(79, 96, 56);
+    style.visuals.selection.bg_fill = SELECTED;
     style.visuals.selection.stroke = Stroke::new(1.0_f32, ACCENT);
-    style.visuals.widgets.inactive.bg_fill = Color32::from_rgb(39, 42, 48);
+    style.visuals.widgets.inactive.bg_fill = CONTROL;
     style.visuals.widgets.inactive.weak_bg_fill = Color32::from_rgb(35, 38, 44);
-    style.visuals.widgets.hovered.bg_fill = Color32::from_rgb(58, 64, 70);
-    style.visuals.widgets.active.bg_fill = Color32::from_rgb(74, 85, 65);
-    style.spacing.item_spacing = Vec2::new(10.0, 9.0);
-    style.spacing.button_padding = Vec2::new(12.0, 7.0);
+    style.visuals.widgets.hovered.bg_fill = HOVER;
+    style.visuals.widgets.active.bg_fill = SELECTED;
     style.spacing.interact_size = Vec2::new(38.0, 30.0);
     style
         .text_styles
@@ -37,8 +30,8 @@ pub fn theme(ctx: &egui::Context) {
     style
         .text_styles
         .insert(egui::TextStyle::Heading, FontId::proportional(21.0));
-    style.visuals.window_corner_radius = egui::CornerRadius::same(18);
-    style.visuals.menu_corner_radius = egui::CornerRadius::same(12);
+    style.visuals.window_corner_radius = egui::CornerRadius::same(WINDOW_RADIUS);
+    style.visuals.menu_corner_radius = egui::CornerRadius::same(SURFACE_RADIUS);
     for widget in [
         &mut style.visuals.widgets.noninteractive,
         &mut style.visuals.widgets.inactive,
@@ -46,7 +39,7 @@ pub fn theme(ctx: &egui::Context) {
         &mut style.visuals.widgets.active,
         &mut style.visuals.widgets.open,
     ] {
-        widget.corner_radius = egui::CornerRadius::same(9);
+        widget.corner_radius = egui::CornerRadius::same(CONTROL_RADIUS);
         widget.bg_stroke = Stroke::NONE;
     }
     style.spacing.item_spacing = Vec2::new(8.0, 6.0);
@@ -180,12 +173,12 @@ impl Studio {
                     );
                     egui::Frame::new()
                         .fill(PANEL)
-                        .corner_radius(18)
+                        .corner_radius(SURFACE_RADIUS)
                         .inner_margin(egui::Margin::symmetric(12, 8))
                         .show(ui, |ui| {
                             ui.horizontal(|ui| {
                                 if ui
-                                    .add(egui::Button::new("■").min_size(Vec2::splat(32.0)))
+                                    .add(egui::Button::new("■").min_size(Vec2::new(40.0, 34.0)))
                                     .on_hover_text("Stop and return to start")
                                     .clicked()
                                 {
@@ -197,18 +190,32 @@ impl Studio {
                                         .size(18.0),
                                 )
                                 .fill(ACCENT)
-                                .corner_radius(18)
-                                .min_size(Vec2::new(48.0, 34.0));
+                                .corner_radius(CONTROL_RADIUS)
+                                .min_size(Vec2::new(40.0, 34.0));
                                 if ui.add(play).on_hover_text("Play / pause · Space").clicked() {
                                     self.toggle_play();
                                 }
-                                if ui
-                                    .toggle_value(&mut self.looped, "↻")
-                                    .on_hover_text("Cycle arrangement")
-                                    .changed()
-                                    && let Some(audio) = &self.audio
-                                {
-                                    audio.set_looped(self.looped);
+                                let cycle_tip = self.project.cycle.map_or_else(
+                                    || "Cycle whole song · C".to_owned(),
+                                    |range| {
+                                        format!(
+                                            "Cycle bars {:.2}–{:.2} · C",
+                                            range.start / 4.0 + 1.0,
+                                            range.end / 4.0
+                                        )
+                                    },
+                                );
+                                let cycle_button = egui::Button::new(
+                                    egui::RichText::new("↻").size(18.0).color(if self.looped {
+                                        BG
+                                    } else {
+                                        MUTED
+                                    }),
+                                )
+                                .fill(if self.looped { CYCLE } else { CONTROL })
+                                .min_size(Vec2::new(40.0, 34.0));
+                                if ui.add(cycle_button).on_hover_text(cycle_tip).clicked() {
+                                    self.toggle_cycle();
                                 }
                                 ui.add_space(6.0);
                                 let position = self.position();
@@ -301,11 +308,7 @@ impl Studio {
                     ui.label(
                         egui::RichText::new(&self.status)
                             .size(12.0)
-                            .color(if self.error {
-                                Color32::from_rgb(255, 169, 144)
-                            } else {
-                                MUTED
-                            }),
+                            .color(if self.error { ERROR } else { MUTED }),
                     );
                     if self.conflict && ui.small_button("Save copy").clicked() {
                         self.save_as();
@@ -337,7 +340,7 @@ impl Studio {
 
     pub fn agent_panel(&mut self, ctx: &egui::Context) {
         egui::SidePanel::right("agents").default_width(238.0).width_range(218.0..=350.0)
-            .frame(egui::Frame::new().fill(PANEL).corner_radius(16).outer_margin(8).inner_margin(16)).show(ctx,|ui|{
+            .frame(egui::Frame::new().fill(PANEL).corner_radius(SURFACE_RADIUS).outer_margin(8).inner_margin(16)).show(ctx,|ui|{
             egui::ScrollArea::vertical().show(ui,|ui|{
                 caption(ui,"LOCAL MCP"); ui.add_space(6.0); ui.heading("Agent connection");
                 ui.add_space(8.0); ui.label("Connect your AI through the local MCP server. Every edit appears in this session.");
@@ -374,8 +377,8 @@ impl Studio {
         egui::CentralPanel::default()
             .frame(
                 egui::Frame::new()
-                    .fill(Color32::from_rgb(25, 28, 34))
-                    .corner_radius(16)
+                    .fill(PANEL)
+                    .corner_radius(SURFACE_RADIUS)
                     .outer_margin(egui::Margin {
                         left: 8,
                         right: 8,
@@ -409,6 +412,13 @@ impl Studio {
                             }
                         }
                     });
+                    if ui
+                        .button("Sections")
+                        .on_hover_text("Edit song sections and cycle ranges")
+                        .clicked()
+                    {
+                        self.show_sections = true;
+                    }
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                         if ui
                             .add(
@@ -438,6 +448,7 @@ impl Studio {
                 let mut new_clip = None;
                 let mut mix = None;
                 let mut seek = None;
+                let mut cycle_section = None;
                 egui::ScrollArea::both()
                     .id_salt("arrange_scroll")
                     .auto_shrink([false, false])
@@ -471,10 +482,15 @@ impl Studio {
                                     .clamp(0.0, self.project.length_bars as f64 * 4.0),
                             );
                         }
-                        painter.rect_filled(rect, 12.0, BG);
+                        painter.rect_filled(rect, SURFACE_RADIUS, BG);
                         painter.rect_filled(
                             Rect::from_min_size(origin, Vec2::new(rect.width(), 54.0)),
-                            0.0,
+                            egui::CornerRadius {
+                                nw: SURFACE_RADIUS,
+                                ne: SURFACE_RADIUS,
+                                sw: 0,
+                                se: 0,
+                            },
                             PANEL,
                         );
                         painter.text(
@@ -484,20 +500,80 @@ impl Studio {
                             FontId::proportional(12.0),
                             MUTED,
                         );
-                        for section in &self.project.sections {
+                        if self.looped
+                            && let Some(range) = self.project.cycle
+                        {
+                            let left = origin.x + header + range.start as f32 * beat_width;
+                            let right = origin.x + header + range.end as f32 * beat_width;
+                            let band = Rect::from_min_max(
+                                Pos2::new(left, origin.y + 25.0),
+                                Pos2::new(right, rect.bottom()),
+                            );
+                            painter.rect_filled(band, MEDIA_RADIUS, CYCLE.gamma_multiply(0.07));
+                            painter.rect_filled(
+                                Rect::from_min_max(band.min, Pos2::new(right, origin.y + 54.0)),
+                                MEDIA_RADIUS,
+                                CYCLE.gamma_multiply(0.16),
+                            );
+                            for x in [left, right] {
+                                painter.line_segment(
+                                    [Pos2::new(x, origin.y + 25.0), Pos2::new(x, rect.bottom())],
+                                    Stroke::new(1.0_f32, CYCLE.gamma_multiply(0.6)),
+                                );
+                            }
+                        }
+                        for (index, section) in self.project.sections.iter().enumerate() {
                             let x = origin.x + header + section.start_bar as f32 * bar_width;
                             let r = Rect::from_min_size(
                                 Pos2::new(x, origin.y),
-                                Vec2::new(section.length_bars as f32 * bar_width - 2.0, 23.0),
+                                Vec2::new(
+                                    (section.length_bars as f32 * bar_width - 2.0).max(4.0),
+                                    23.0,
+                                ),
                             );
-                            painter.rect_filled(r, 7.0, Color32::from_rgb(48, 54, 44));
-                            painter.text(
-                                r.left_center() + Vec2::new(9.0, 0.0),
-                                Align2::LEFT_CENTER,
-                                &section.name,
-                                FontId::proportional(12.0),
-                                ACCENT,
-                            );
+                            let cycling =
+                                self.looped && self.project.cycle == Some(section.cycle_range());
+                            let selected = self.selected_section == Some(index);
+                            let response = ui
+                                .put(
+                                    r,
+                                    egui::Button::new(
+                                        egui::RichText::new(&section.name)
+                                            .size(12.0)
+                                            .color(if cycling { BG } else { TEXT }),
+                                    )
+                                    .fill(if cycling {
+                                        CYCLE
+                                    } else if selected {
+                                        SELECTED
+                                    } else {
+                                        CONTROL
+                                    })
+                                    .corner_radius(MEDIA_RADIUS)
+                                    .truncate(),
+                                )
+                                .on_hover_text(format!(
+                                    "{} · bars {}–{}\nDouble-click to cycle",
+                                    section.name,
+                                    section.start_bar + 1,
+                                    section.start_bar + section.length_bars
+                                ));
+                            if response.clicked() {
+                                self.selected_section = Some(index);
+                            }
+                            if response.double_clicked() {
+                                cycle_section = Some(index);
+                            }
+                            response.context_menu(|ui| {
+                                if ui.button("Cycle section").clicked() {
+                                    cycle_section = Some(index);
+                                    ui.close();
+                                }
+                                if ui.button("Edit sections…").clicked() {
+                                    self.show_sections = true;
+                                    ui.close();
+                                }
+                            });
                         }
                         for bar in 0..=self.project.length_bars {
                             let x = origin.x + header + bar as f32 * bar_width;
@@ -526,11 +602,7 @@ impl Studio {
                                 Vec2::new(rect.width(), row_h),
                             );
                             if ti == self.selected_track {
-                                painter.rect_filled(
-                                    row.shrink(2.0),
-                                    10.0,
-                                    Color32::from_rgb(30, 33, 39),
-                                );
+                                painter.rect_filled(row.shrink(2.0), CONTROL_RADIUS, SURFACE);
                             }
                             painter.line_segment(
                                 [row.left_bottom(), row.right_bottom()],
@@ -575,33 +647,27 @@ impl Studio {
                                     row.min + Vec2::new(header - 61.0 + j as f32 * 27.0, 31.0),
                                     Vec2::new(22.0, 23.0),
                                 );
-                                let active_color = if j == 0 {
-                                    Color32::from_rgb(235, 186, 111)
-                                } else {
-                                    ACCENT
-                                };
-                                painter.rect_filled(
-                                    r,
-                                    6.0,
-                                    if active { active_color } else { LINE },
-                                );
-                                painter.text(
-                                    r.center(),
-                                    Align2::CENTER_CENTER,
-                                    label,
-                                    FontId::proportional(12.0),
-                                    if active { BG } else { MUTED },
-                                );
-                                if ui
-                                    .interact(
-                                        r.expand(2.0),
-                                        ui.id().with(("mix", ti, j)),
-                                        Sense::click(),
-                                    )
-                                    .on_hover_text(if j == 0 { "Mute track" } else { "Solo track" })
-                                    .on_hover_cursor(egui::CursorIcon::PointingHand)
-                                    .clicked()
-                                {
+                                let active_color = if j == 0 { CYCLE } else { ACCENT };
+                                let response = ui
+                                    .scope(|ui| {
+                                        ui.spacing_mut().button_padding = Vec2::new(5.0, 3.0);
+                                        ui.spacing_mut().interact_size = Vec2::new(22.0, 23.0);
+                                        ui.put(
+                                            r,
+                                            egui::Button::new(
+                                                egui::RichText::new(label)
+                                                    .size(12.0)
+                                                    .color(if active { BG } else { MUTED }),
+                                            )
+                                            .fill(if active { active_color } else { CONTROL })
+                                            .corner_radius(CONTROL_RADIUS),
+                                        )
+                                        .on_hover_text(
+                                            if j == 0 { "Mute track" } else { "Solo track" },
+                                        )
+                                    })
+                                    .inner;
+                                if response.clicked() {
                                     mix = Some((ti, j, !active));
                                 }
                             }
@@ -619,23 +685,23 @@ impl Studio {
                                 let sel = ti == self.selected_track && ci == self.selected_clip;
                                 painter.rect_filled(
                                     r,
-                                    9.0,
+                                    MEDIA_RADIUS,
                                     c.gamma_multiply(if inaudible { 0.18 } else { 0.32 }),
                                 );
                                 painter.rect_filled(
                                     Rect::from_min_size(r.min, Vec2::new(r.width(), 19.0)),
                                     egui::CornerRadius {
-                                        nw: 9,
-                                        ne: 9,
-                                        sw: 2,
-                                        se: 2,
+                                        nw: MEDIA_RADIUS,
+                                        ne: MEDIA_RADIUS,
+                                        sw: 0,
+                                        se: 0,
                                     },
                                     c.gamma_multiply(if inaudible { 0.4 } else { 0.78 }),
                                 );
                                 if sel {
                                     painter.rect_stroke(
                                         r,
-                                        9.0,
+                                        MEDIA_RADIUS,
                                         Stroke::new(1.5_f32, c),
                                         StrokeKind::Inside,
                                     );
@@ -760,6 +826,9 @@ impl Studio {
                     self.selected_clip = c;
                     self.sync_audio();
                 }
+                if let Some(index) = cycle_section {
+                    self.cycle_section(index);
+                }
                 if let Some(beat) = seek {
                     self.seek(beat);
                 }
@@ -797,7 +866,7 @@ impl Studio {
             .frame(
                 egui::Frame::new()
                     .fill(PANEL)
-                    .corner_radius(16)
+                    .corner_radius(SURFACE_RADIUS)
                     .outer_margin(egui::Margin {
                         left: 8,
                         right: 8,
@@ -929,7 +998,7 @@ impl Studio {
                 let rr=Rect::from_min_size(Pos2::new(origin.x,y),Vec2::new(rect.width(),row));
                 painter.rect_filled(rr,3.0,if black{Color32::from_rgb(22,24,29)}else{Color32::from_rgb(30,33,38)});
                 let kr=Rect::from_min_size(rr.min,Vec2::new(key-2.0,row-1.0));
-                painter.rect_filled(kr,4.0,if black{Color32::from_rgb(42,45,51)}else{Color32::from_rgb(175,181,185)});
+                painter.rect_filled(kr,MEDIA_RADIUS,if black{Color32::from_rgb(42,45,51)}else{Color32::from_rgb(175,181,185)});
                 if pitch%12==0||!black {
                     painter.text(kr.center(),Align2::CENTER_CENTER,note_name(pitch),FontId::monospace(11.0),if black{TEXT}else{BG});
                 }
@@ -942,7 +1011,7 @@ impl Studio {
             let mut hit=false;
             for (i,n) in clip.notes.iter().enumerate() {
                 let nr=Rect::from_min_size(Pos2::new(origin.x+key+n.start as f32*beat,origin.y+(hi-n.pitch)as f32*row+1.0),Vec2::new((n.duration as f32*beat-1.0).max(3.0),row-2.0));
-                painter.rect_filled(nr,5.0,tint.gamma_multiply(0.55+n.velocity*0.45));
+                painter.rect_filled(nr,MEDIA_RADIUS,tint.gamma_multiply(0.55+n.velocity*0.45));
                 if nr.width()>28.0 {
                     ui.painter_at(nr).text(nr.left_center()+Vec2::new(5.0,0.0),Align2::LEFT_CENTER,note_name(n.pitch),FontId::monospace(11.0),BG);
                 }
@@ -963,8 +1032,8 @@ impl Studio {
                     let start=((original.start+delta.x as f64/beat as f64)/self.grid).round()*self.grid;
                     let start=start.clamp(0.0,(clip.length-original.duration).max(0.0));
                     let ghost=nr.translate(Vec2::new((start-n.start)as f32*beat,(delta.y/row).round()*row));
-                    painter.rect_filled(ghost,5.0,tint.gamma_multiply(0.35));
-                    painter.rect_stroke(ghost,5.0,Stroke::new(1.3_f32,TEXT),StrokeKind::Inside);
+                    painter.rect_filled(ghost,MEDIA_RADIUS,tint.gamma_multiply(0.35));
+                    painter.rect_stroke(ghost,MEDIA_RADIUS,Stroke::new(1.3_f32,TEXT),StrokeKind::Inside);
                 }
                 if res.drag_stopped() && let Some((index,mut original,drag_origin))=self.note_drag.take() {
                     let delta=ui.input(|i|i.pointer.latest_pos()).unwrap_or(drag_origin)-drag_origin;
@@ -1035,7 +1104,7 @@ impl Studio {
                     egui::Frame::new()
                         .fill(BG)
                         .inner_margin(egui::Margin::same(12))
-                        .corner_radius(14.0)
+                        .corner_radius(SURFACE_RADIUS)
                         .show(ui, |ui| {
                             ui.set_width(115.0);
                             ui.label(egui::RichText::new(&t.name).color(color(t.color)).strong());
@@ -1049,8 +1118,8 @@ impl Studio {
                                 ui.vertical(|ui| {
                                     ui.add_space(15.0);
                                     ui.label(format!("{:.1} dB", 20.0 * gain.max(0.00001).log10()));
-                                    ui.toggle_value(&mut mute, "M");
-                                    ui.toggle_value(&mut solo, "S");
+                                    crate::design::mix_toggle(ui, &mut mute, "M", true);
+                                    crate::design::mix_toggle(ui, &mut solo, "S", false);
                                 });
                             });
                             ui.add(
@@ -1067,7 +1136,7 @@ impl Studio {
                 egui::Frame::new()
                     .fill(Color32::from_rgb(39, 46, 36))
                     .inner_margin(egui::Margin::same(12))
-                    .corner_radius(14.0)
+                    .corner_radius(SURFACE_RADIUS)
                     .show(ui, |ui| {
                         ui.set_width(100.0);
                         ui.label(egui::RichText::new("MASTER").color(ACCENT).strong());

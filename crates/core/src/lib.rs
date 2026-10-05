@@ -30,6 +30,8 @@ pub struct Project {
     pub master_gain: f32,
     pub tracks: Vec<Track>,
     pub sections: Vec<Section>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cycle: Option<CycleRange>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
@@ -107,6 +109,14 @@ pub struct Note {
     pub velocity: f32,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct CycleRange {
+    pub start: f64,
+    /// Exclusive end in quarter-note beats.
+    pub end: f64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Section {
@@ -126,6 +136,12 @@ pub enum Command {
     },
     SetLength {
         length_bars: u32,
+    },
+    SetSections {
+        sections: Vec<Section>,
+    },
+    SetCycleRange {
+        range: Option<CycleRange>,
     },
     SetMasterGain {
         gain: f32,
@@ -208,6 +224,16 @@ impl Default for Project {
             master_gain: 0.7,
             tracks: Vec::new(),
             sections: Vec::new(),
+            cycle: None,
+        }
+    }
+}
+
+impl Section {
+    pub fn cycle_range(&self) -> CycleRange {
+        CycleRange {
+            start: self.start_bar as f64 * 4.0,
+            end: (self.start_bar as f64 + self.length_bars as f64) * 4.0,
         }
     }
 }

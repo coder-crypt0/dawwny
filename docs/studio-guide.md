@@ -5,6 +5,7 @@ Run `cargo run -p dawwny-app`, or open the release `dawwny.exe`. A new session s
 ## Arrange and edit
 
 - Press **Space** to play or pause at the current position. **Stop** returns to the beginning. Click or drag the numbered arrangement ruler to move the playhead. The loop button changes the running transport.
+- Double-click a section above the ruler to highlight its bounds, seek to its start and cycle it. Running playback continues; paused playback stays paused. **C** or **↻** toggles cycle, retaining the chosen range. **Sections** edits section names, start bars and lengths; **Cycle whole song** clears the range.
 - Click a clip to open its piano roll. Drag a clip to move it on the quantized grid.
 - Double-click an empty track lane to create a one-bar clip. Add instruments with **+ Track**.
 - Click empty piano-roll space to add a note. Set grid, note length, and velocity for new notes in the editor toolbar. Drag notes to change time and pitch. Right-click a note to open its properties, where you can edit pitch, length, and velocity or delete it.
@@ -28,7 +29,7 @@ Use **Refresh MIDI devices**, then choose your hardware controller. Native MIDI 
 
 The project-name menu provides **New session**, **Open project / MIDI**, **Save**, **Save a copy**, **Undo/Redo**, project length (in bars), the fixed 4/4 signature, **Open Velvet Dawn demo**, and this guide. Opening a JSON project switches the active session to that file; imported MIDI becomes a new local session and the original file is preserved. **Save a copy** lets you choose a destination.
 
-**Export** writes either a 24-bit stereo WAV at 48 kHz, including effect tails, or a MIDI sequence. WAV export runs on a worker thread so editing stays responsive and audio isn't buffered for the entire song. A running export must finish before the window closes.
+**Export** writes either a 24-bit stereo WAV at 48 kHz, including effect tails, or a MIDI sequence. Exports cover the entire project once; a playback cycle range does not trim or repeat the export. WAV export runs on a worker thread so editing stays responsive and audio isn't buffered for the entire song. A running export must finish before the window closes.
 
 MIDI import is for notes and constant-tempo arrangement, not a full reconstruction of another DAW's instruments, controllers, or mixing. See [project format](project-format.md).
 

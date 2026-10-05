@@ -461,6 +461,11 @@ impl Renderer {
     pub fn frame(&self) -> u64 {
         self.frame
     }
+    pub(crate) fn frame_at_beat(&self, beat: f64) -> u64 {
+        (beat * self.plan.sample_rate as f64 * 60.0 / self.plan.tempo)
+            .round()
+            .clamp(0.0, self.plan.song_frames as f64) as u64
+    }
     pub fn position_beats(&self) -> f64 {
         self.frame.min(self.plan.song_frames) as f64 / self.plan.sample_rate as f64
             * self.plan.tempo

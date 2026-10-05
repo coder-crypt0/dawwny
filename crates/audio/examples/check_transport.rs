@@ -76,6 +76,33 @@ fn main() -> Result<()> {
         engine.position_beats() >= before,
         "Tempo edit lost the musical position"
     );
+    project.cycle = Some(dawwny_core::CycleRange {
+        start: 8.0,
+        end: 8.5,
+    });
+    engine.update_project(&project, 0)?;
+    engine.seek_beats(8.0)?;
+    for _ in 0..5 {
+        wait();
+        let beat = engine.position_beats();
+        ensure!(
+            (8.0..=8.5).contains(&beat),
+            "Cycle escaped its bounds: {beat}"
+        );
+    }
+    engine.set_looped(false);
+    wait();
+    wait();
+    ensure!(
+        engine.position_beats() > 8.5,
+        "Disabling cycle did not continue playback"
+    );
+    engine.set_looped(true);
+    wait();
+    ensure!(
+        (8.0..=8.5).contains(&engine.position_beats()),
+        "Re-enabling cycle lost the range"
+    );
     engine.pause();
     wait();
     let before = engine.position_beats();
@@ -105,7 +132,7 @@ fn main() -> Result<()> {
     );
     engine.collect_retired();
     println!(
-        "PASS: real device clock, pause/resume, seeking, mute/solo/pan, tempo replacement, live input and stop; {} Hz; MIDI inputs: {}",
+        "PASS: real device clock, pause/resume, seeking, mute/solo/pan, tempo replacement, section cycle, live input and stop; {} Hz; MIDI inputs: {}",
         engine.sample_rate(),
         AudioEngine::midi_ports()?.len()
     );

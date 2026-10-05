@@ -1,7 +1,7 @@
 use crate::{LiveEvent, Renderer, compile, dsp::MixSnapshot};
 use anyhow::{Context, Result, bail, ensure};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use dawwny_core::Project;
+use dawwny_core::{CycleRange, Project};
 use rtrb::{Consumer, Producer, RingBuffer};
 use std::sync::{
     Arc, Mutex,
@@ -29,6 +29,7 @@ enum Command {
     Mix(MixSnapshot),
     MonitorMix(MixSnapshot),
     Live(LiveEvent),
+    Cycle(Option<CycleRange>),
 }
 struct Runtime {
     arrangement: Box<Renderer>,
@@ -38,6 +39,8 @@ struct Runtime {
     midi: Consumer<LiveEvent>,
     state: Arc<Telemetry>,
     tail: u64,
+    cycle: Option<CycleRange>,
+    cycle_frames: Option<(u64, u64)>,
 }
 impl Runtime {
     fn begin_block(&mut self) {
@@ -58,6 +61,7 @@ impl Runtime {
                         renderer.seek_beats(self.arrangement.position_beats());
                     }
                     let old = std::mem::replace(&mut self.arrangement, renderer);
+                    self.update_cycle_frames();
                     // Capacity was checked above; only this thread writes to this queue.
                     let _ = self.retired.push(old);
                 }
@@ -69,6 +73,10 @@ impl Runtime {
                 Command::Mix(mix) => self.arrangement.apply_mix(mix),
                 Command::MonitorMix(mix) => self.monitor.apply_mix(mix),
                 Command::Live(event) => self.monitor.live_event(event),
+                Command::Cycle(range) => {
+                    self.cycle = range;
+                    self.update_cycle_frames();
+                }
             }
         }
         for _ in 0..256 {
@@ -82,13 +90,28 @@ impl Runtime {
             self.tail = 0;
         }
     }
+    fn update_cycle_frames(&mut self) {
+        self.cycle_frames = self.cycle.map(|range| {
+            (
+                self.arrangement.frame_at_beat(range.start),
+                self.arrangement.frame_at_beat(range.end),
+            )
+        });
+    }
     fn next_frame(&mut self) -> [f32; 2] {
         let mut stereo = [0.0; 2];
         if self.state.playing.load(Ordering::Relaxed) {
             if self.state.looped.load(Ordering::Relaxed)
-                && self.arrangement.frame() >= self.arrangement.song_frames()
+                && self.arrangement.frame()
+                    >= self
+                        .cycle_frames
+                        .map_or(self.arrangement.song_frames(), |(_, end)| end)
             {
-                self.arrangement.rewind();
+                if let Some(range) = self.cycle {
+                    self.arrangement.seek_beats(range.start);
+                } else {
+                    self.arrangement.rewind();
+                }
             }
             if self.arrangement.frame() < self.arrangement.total_frames() {
                 stereo = self.arrangement.next_frame();
@@ -217,8 +240,17 @@ impl AudioEngine {
             self.rate = config.sample_rate.0;
             let (producer, commands) = RingBuffer::new(32);
             let (retired, consumer) = RingBuffer::new(32);
+            let arrangement = Box::new(Renderer::new(compile(project, self.rate)?));
+            let cycle_frames = project.cycle.map(|range| {
+                (
+                    arrangement.frame_at_beat(range.start),
+                    arrangement.frame_at_beat(range.end),
+                )
+            });
             let runtime = Runtime {
-                arrangement: Box::new(Renderer::new(compile(project, self.rate)?)),
+                arrangement,
+                cycle: project.cycle,
+                cycle_frames,
                 monitor: Self::monitor(project, selected, self.rate)?,
                 commands,
                 retired,
@@ -242,6 +274,7 @@ impl AudioEngine {
         } else {
             let previous = self.project.as_ref().context("Missing audio project")?;
             let same_structure = audio_structure_equal(previous, project);
+            let cycle_changed = previous.cycle != project.cycle;
             let monitor_changed = self.selected != selected
                 || previous.tempo != project.tempo
                 || previous
@@ -262,6 +295,9 @@ impl AudioEngine {
             } else {
                 None
             };
+            if cycle_changed {
+                self.send(Command::Cycle(project.cycle))?;
+            }
             if let Some(renderer) = arrangement {
                 self.send(Command::Replace {
                     renderer,
@@ -288,7 +324,11 @@ impl AudioEngine {
         };
         self.update_project(project, selected)?;
         self.set_looped(looped);
-        if self.position_beats() >= project.length_bars as f64 * 4.0 {
+        if looped && let Some(range) = project.cycle {
+            if self.position_beats() < range.start || self.position_beats() >= range.end {
+                self.seek_beats(range.start)?;
+            }
+        } else if self.position_beats() >= project.length_bars as f64 * 4.0 {
             self.seek_beats(0.0)?;
         }
         self.state.playing.store(true, Ordering::Release);
@@ -521,10 +561,82 @@ mod tests {
                 midi,
                 state: Arc::default(),
                 tail: 0,
+                cycle: None,
+                cycle_frames: None,
             },
             producer,
             consumer,
         )
+    }
+    #[test]
+    fn cycle_wraps_at_the_exact_frame_and_survives_pause_mix_and_tempo_changes() {
+        let (mut runtime, mut commands, _retired) = runtime();
+        let range = CycleRange {
+            start: 8.0,
+            end: 8.25,
+        };
+        commands.push(Command::Cycle(Some(range))).ok().unwrap();
+        runtime.begin_block();
+        runtime.state.looped.store(true, Ordering::Relaxed);
+        runtime.state.playing.store(true, Ordering::Relaxed);
+        let (start, end) = runtime.cycle_frames.unwrap();
+        runtime
+            .arrangement
+            .seek_beats(range.end - 92.0 / (60.0 * 16000.0));
+        assert_eq!(runtime.arrangement.frame(), end - 1);
+        runtime.next_frame();
+        assert_eq!(runtime.arrangement.frame(), end);
+        COUNT.with(|c| c.set(0));
+        TRACK.with(|t| t.set(true));
+        for _ in 0..(end - start) * 3 + 1 {
+            std::hint::black_box(runtime.next_frame());
+        }
+        TRACK.with(|t| t.set(false));
+        assert_eq!(COUNT.with(Cell::get), 0);
+        assert_eq!(runtime.arrangement.frame(), start + 1);
+        let mut project = dawwny_core::demo_project();
+        project.tracks[0].mute = true;
+        commands
+            .push(Command::Mix(MixSnapshot::new(&project)))
+            .ok()
+            .unwrap();
+        runtime.begin_block();
+        assert_eq!(runtime.arrangement.frame(), start + 1);
+        runtime.state.playing.store(false, Ordering::Relaxed);
+        for _ in 0..100 {
+            runtime.next_frame();
+        }
+        assert_eq!(runtime.arrangement.frame(), start + 1);
+        let beat = runtime.arrangement.position_beats();
+        project.tempo = 120.0;
+        commands
+            .push(Command::Replace {
+                renderer: Box::new(Renderer::new(compile(&project, 16000).unwrap())),
+                preserve: true,
+            })
+            .ok()
+            .unwrap();
+        runtime.begin_block();
+        assert!((runtime.arrangement.position_beats() - beat).abs() < 0.0002);
+        let (start, end) = runtime.cycle_frames.unwrap();
+        assert_eq!(end - start, 2000);
+        runtime.arrangement.seek_beats(range.end);
+        runtime.state.looped.store(false, Ordering::Relaxed);
+        runtime.state.playing.store(true, Ordering::Relaxed);
+        runtime.next_frame();
+        assert_eq!(runtime.arrangement.frame(), end + 1);
+        runtime.state.looped.store(true, Ordering::Relaxed);
+        runtime.next_frame();
+        assert_eq!(runtime.arrangement.frame(), start + 1);
+        commands.push(Command::Cycle(None)).ok().unwrap();
+        runtime.begin_block();
+        assert_eq!(runtime.arrangement.frame(), start + 1);
+        assert_eq!(runtime.cycle_frames, None);
+        runtime
+            .arrangement
+            .seek_beats(project.length_bars as f64 * 4.0);
+        runtime.next_frame();
+        assert_eq!(runtime.arrangement.frame(), 1);
     }
     #[test]
     fn pause_mix_and_graph_changes_keep_the_transport_position() {

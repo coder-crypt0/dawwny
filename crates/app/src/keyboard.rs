@@ -1,3 +1,4 @@
+use crate::design::{ACCENT, MEDIA_RADIUS, SELECTED, SURFACE};
 use crate::studio::Studio;
 use dawwny_audio::{AudioEngine, LiveEvent, MidiPort};
 use eframe::egui::{self, Color32, Pos2, Rect, Sense, Vec2};
@@ -141,7 +142,7 @@ impl Studio {
                     let r=Rect::from_min_size(rect.min+Vec2::new(i as f32*white_width,0.0),Vec2::new(white_width-2.0,100.0));
                     let pitch=base+offset;
                     let down=self.keyboard.held.contains(&Some(pitch)) || self.keyboard.mouse==Some(pitch);
-                    ui.painter().rect_filled(r,7,if down {Color32::from_rgb(203,231,143)}else{Color32::from_rgb(204,209,212)});
+                    ui.painter().rect_filled(r,MEDIA_RADIUS,if down {ACCENT}else{Color32::from_rgb(204,209,212)});
                     let label=KEYS.iter().find(|(_,n,_)|n==offset).map_or("",|(_,_,label)|*label);
                     ui.painter().text(r.center_bottom()-Vec2::new(0.0,15.0),egui::Align2::CENTER_CENTER,label,egui::FontId::proportional(14.0),Color32::from_gray(35));
                     if pointer.is_some_and(|p|r.contains(p)){mouse_pitch=Some(pitch);}
@@ -150,7 +151,7 @@ impl Studio {
                     let r=Rect::from_min_size(rect.min+Vec2::new(position as f32*white_width-white_width*0.31,0.0),Vec2::new(white_width*0.6,63.0));
                     let pitch=base+offset;
                     let down=self.keyboard.held.contains(&Some(pitch)) || self.keyboard.mouse==Some(pitch);
-                    ui.painter().rect_filled(r,5,if down {Color32::from_rgb(100,121,65)}else{Color32::from_rgb(30,33,40)});
+                    ui.painter().rect_filled(r,MEDIA_RADIUS,if down {SELECTED}else{SURFACE});
                     let label=KEYS.iter().find(|(_,n,_)|*n==offset).map_or("",|(_,_,label)|*label);
                     ui.painter().text(r.center_bottom()-Vec2::new(0.0,14.0),egui::Align2::CENTER_CENTER,label,egui::FontId::proportional(12.0),Color32::WHITE);
                     if pointer.is_some_and(|p|r.contains(p)){mouse_pitch=Some(pitch);}
