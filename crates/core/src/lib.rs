@@ -6,12 +6,14 @@ mod factory;
 pub use factory::{SOUND_CATEGORIES, SoundInfo, sound_catalog, sound_preset};
 mod demo;
 mod midi;
+mod paths;
 mod sound;
 mod storage;
 mod validation;
 pub use commands::apply_commands;
 pub use demo::demo_project;
 pub use midi::{export_midi, import_midi};
+pub use paths::default_data_directory;
 pub use sound::{
     CustomSynth, Effect, EffectSlot, FilterMode, Oscillator, SoundPreset, Waveform, sound_presets,
 };

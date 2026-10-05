@@ -1,23 +1,23 @@
-use rmcp::{ServiceExt, transport::stdio};
 use std::path::PathBuf;
-#[tokio::main(flavor = "current_thread")]
-async fn main() -> anyhow::Result<()> {
-    let mut project = PathBuf::from("sessions/untitled.dawwny.json");
-    let mut export_dir = PathBuf::from("exports");
+fn main() -> anyhow::Result<()> {
+    let mut project: Option<PathBuf> = None;
+    let mut export_dir: Option<PathBuf> = None;
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--project" => {
-                project = args
-                    .next()
-                    .ok_or_else(|| anyhow::anyhow!("--project requires a file path"))?
-                    .into()
+                project = Some(
+                    args.next()
+                        .ok_or_else(|| anyhow::anyhow!("--project requires a file path"))?
+                        .into(),
+                )
             }
             "--export-dir" => {
-                export_dir = args
-                    .next()
-                    .ok_or_else(|| anyhow::anyhow!("--export-dir requires a directory"))?
-                    .into()
+                export_dir = Some(
+                    args.next()
+                        .ok_or_else(|| anyhow::anyhow!("--export-dir requires a directory"))?
+                        .into(),
+                )
             }
             "--help" | "-h" => {
                 eprintln!(
@@ -28,11 +28,13 @@ async fn main() -> anyhow::Result<()> {
             _ => anyhow::bail!("Unknown option: {arg}"),
         }
     }
-    dawwny_core::SessionStore::new(project.clone()).initialize(&dawwny_core::demo_project())?;
-    dawwny_mcp::build_server(project, export_dir)
-        .serve(stdio())
-        .await?
-        .waiting()
-        .await?;
-    Ok(())
+    let project = match project {
+        Some(path) => path,
+        None => dawwny_core::default_data_directory()?.join("sessions/untitled.dawwny.json"),
+    };
+    let export_dir = match export_dir {
+        Some(path) => path,
+        None => dawwny_core::default_data_directory()?.join("exports"),
+    };
+    dawwny_mcp::serve_stdio(project, export_dir)
 }

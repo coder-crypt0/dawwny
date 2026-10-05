@@ -168,6 +168,10 @@ impl Studio {
                                     self.show_help = true;
                                     ui.close();
                                 }
+                                if ui.button("About dawwny & licenses").clicked() {
+                                    self.show_about = true;
+                                    ui.close();
+                                }
                             });
                         },
                     );
@@ -356,10 +360,10 @@ impl Studio {
                 if let Some(rev)=self.last_external_revision{ui.label(egui::RichText::new(format!("External revision {rev} received")).color(ACCENT).size(12.0));}
                 ui.add_space(12.0);
                 if ui.button("Copy MCP configuration").clicked(){
-                    let executable=std::env::current_exe().unwrap_or_default().with_file_name(if cfg!(windows){"dawwny-mcp.exe"}else{"dawwny-mcp"});
+                    let executable=std::env::current_exe().unwrap_or_default();
                     let project=std::fs::canonicalize(self.store.path()).unwrap_or_else(|_|self.store.path().to_path_buf());
                     let exports=project.parent().unwrap_or(std::path::Path::new(".")).join("exports");
-                    let config=serde_json::json!({"mcpServers":{"dawwny":{"command":executable,"args":["--project",project,"--export-dir",exports]}}});
+                    let config=serde_json::json!({"mcpServers":{"dawwny":{"command":executable,"args":["--mcp","--project",project,"--export-dir",exports]}}});
                     ctx.copy_text(serde_json::to_string_pretty(&config).unwrap_or_default());
                     self.status="MCP configuration copied. Add it to your agent client's MCP servers.".into();
                 }
