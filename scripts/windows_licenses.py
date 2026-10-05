@@ -44,4 +44,3 @@ def third_party_notices(root: Path) -> dict[str, bytes]:
                     entries[f"licenses/{name}/{relative}"] = content
     entries["THIRD-PARTY-NOTICES.txt"] = ("\n".join(lines) + "\n").encode("utf-8")
     return entries
-

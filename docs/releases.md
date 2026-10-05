@@ -37,3 +37,9 @@ Choose a new version for subsequent releases; published assets are not silently 
 ## Scope of v0.1
 
 This is a MIDI composition prototype with stock synthesis, SF2 import, MIDI recording, arrangement/piano-roll editing, section cycling, live mixing, stock effects and MIDI/WAV export. Audio recording/tracks, automation, native VST hosting and remote access remain future work. Installed acoustic sample banks determine acoustic realism; the 2,310 factory entries are synth variations. Physical MIDI-controller behavior still needs hardware validation.
+
+## v0.1.0 verified artifact
+
+The locally built Windows x64 release is 8,136,192 bytes (7.76 MiB), built with Rust 1.93.1 and the normal feature set. SHA-256: `88aff82619517f952e7a1a773c33946da26aceb5b5e408ba2789d85c5842d82c`.
+
+The final staged file passed GUI startup, default user-data storage and clean shutdown from a folder containing only the EXE. Its stdio MCP mode passed initialization, seven-tool discovery, project mutation, stale-revision rejection and MIDI/WAV export. The separate developer server also passed its process smoke test. The workspace passed 56 tests, Rust formatting and strict Clippy. LLVM inspection independently confirmed the x64 GUI subsystem and the same 17 Windows system DLL imports reported by the packager. The prototype is unsigned. These measurements describe this artifact; rebuilds with another toolchain need their own hash and size verification.
