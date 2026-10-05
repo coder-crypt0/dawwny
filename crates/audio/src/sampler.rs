@@ -235,7 +235,12 @@ fn preflight(reader: &mut (impl Read + Seek), length: u64) -> Result<usize> {
                 && *indexes.last().unwrap() < bags.len() / 4,
             "Invalid SF2 zone span"
         );
-        let indexes: Vec<_> = bags.chunks_exact(4).map(|h| u16_at(h, 0)).collect();
+        let indexes: Vec<_> = bags
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .map(|h| u16_at(h, 0))
+            .collect();
         ensure!(
             indexes[0] == 0
                 && indexes.windows(2).all(|w| w[0] <= w[1])
@@ -245,7 +250,9 @@ fn preflight(reader: &mut (impl Read + Seek), length: u64) -> Result<usize> {
     }
     let mut seen = std::collections::HashSet::new();
     for p in tables[b"phdr"]
-        .chunks_exact(38)
+        .as_chunks::<38>()
+        .0
+        .iter()
         .take(tables[b"phdr"].len() / 38 - 1)
     {
         let program = u16_at(p, 20);
@@ -256,7 +263,9 @@ fn preflight(reader: &mut (impl Read + Seek), length: u64) -> Result<usize> {
         );
     }
     for s in tables[b"shdr"]
-        .chunks_exact(46)
+        .as_chunks::<46>()
+        .0
+        .iter()
         .take(tables[b"shdr"].len() / 46 - 1)
     {
         ensure!(
