@@ -23,7 +23,7 @@ Open **Sound → Effects**. Add up to eight slots, switch them on/off, move them
 
 Rack bypass and zero wet mix pass audio through exactly. The original reverb/delay controls remain under **Legacy ambience** to preserve old sessions. They precede the rack; set them to zero when using only rack ambience. Track gain precedes the rack and therefore affects compressor input. The master soft limiter follows the complete mix. Saturation is not oversampled in this version.
 
-DSP buffers allocate before playback. The complete session has a 64 MiB delay-buffer budget at the selected sample rate; overly large echo racks fail with an actionable message before allocation. Rack export tails are capped at 30 seconds plus the instrument release and legacy tail. Very long feedback tails therefore fade out at that bound. Live edits still restart playback after autosave.
+DSP buffers allocate before playback. The complete session has a 64 MiB delay-buffer budget at the selected sample rate; overly large echo racks fail with an actionable message before allocation. Rack export tails are capped at 30 seconds plus the instrument release and legacy tail. Very long feedback tails therefore fade out at that bound. Gain, pan, mute and solo update the running mix without rewinding. Synthesis and effect edits swap a prepared graph at an audio-block boundary while preserving the beat, with fresh effect history.
 
 ## Agent workflow
 

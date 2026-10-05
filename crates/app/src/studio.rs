@@ -28,6 +28,7 @@ pub struct Studio {
     pub playhead: f64,
     pub keyboard: crate::keyboard::KeyboardState,
     pub samples: crate::samples::SampleLibrary,
+    pub recording: crate::recording::RecordingState,
     pub zoom: f32,
     pub fit_timeline: bool,
     pub piano_zoom: f32,
@@ -91,6 +92,7 @@ impl Studio {
             playhead: 0.0,
             keyboard: crate::keyboard::KeyboardState::default(),
             samples: crate::samples::SampleLibrary::default(),
+            recording: crate::recording::RecordingState::default(),
             zoom: 1.0,
             fit_timeline: true,
             piano_zoom: 1.0,
@@ -180,6 +182,7 @@ impl Studio {
         self.error = true;
     }
     pub fn stop(&mut self) {
+        self.finish_recording();
         self.playhead = 0.0;
         self.keyboard.held.fill(None);
         if let Some(preview) = &mut self.preview
@@ -211,6 +214,7 @@ impl Studio {
             self.error = true;
         }
         if self.playing() {
+            self.finish_recording();
             if let Some(audio) = &mut self.audio {
                 audio.pause();
             }
@@ -231,6 +235,14 @@ impl Studio {
         }
     }
     pub fn sync_audio(&mut self) {
+        if self
+            .recording
+            .take
+            .as_ref()
+            .is_some_and(|take| !take.matches_track(self.project.tracks.get(self.selected_track)))
+        {
+            self.finish_recording();
+        }
         if let Some(audio) = &mut self.audio
             && let Err(e) = audio.update_project(&self.project, self.selected_track)
         {
@@ -238,6 +250,7 @@ impl Studio {
         }
     }
     pub fn seek(&mut self, beat: f64) {
+        self.finish_recording();
         if !beat.is_finite() {
             return;
         }
@@ -251,6 +264,7 @@ impl Studio {
     }
 
     pub fn history(&mut self, redo: bool) {
+        self.finish_recording();
         if !self.commit() {
             return;
         }
@@ -303,6 +317,7 @@ impl Studio {
     }
 
     pub fn open(&mut self) {
+        self.finish_recording();
         if !self.commit() {
             return;
         }
@@ -340,6 +355,7 @@ impl Studio {
     }
 
     pub fn new_document(&mut self, mut project: Project) {
+        self.finish_recording();
         if !self.commit() {
             return;
         }
@@ -370,6 +386,7 @@ impl Studio {
     }
 
     pub fn save_as(&mut self) {
+        self.finish_recording();
         if let Some(path) = rfd::FileDialog::new()
             .add_filter("dawwny project", &["json"])
             .set_file_name(format!("{}.dawwny.json", self.project.name))
@@ -401,6 +418,7 @@ impl Studio {
     }
 
     pub fn export(&mut self, wav: bool) {
+        self.finish_recording();
         if self.export_job.is_some() || !self.commit() {
             return;
         }
@@ -474,6 +492,36 @@ impl Studio {
         self.tab = EditorTab::Piano;
     }
 
+    pub fn transform_clip(&mut self, transpose: Option<i8>) {
+        let ti = self.selected_track;
+        let ci = self.selected_clip;
+        let Some(track) = self.project.tracks.get(ti) else {
+            return;
+        };
+        let Some(clip) = track.clips.get(ci) else {
+            return;
+        };
+        let command = if let Some(semitones) = transpose {
+            dawwny_core::Command::TransposeClip {
+                track_id: track.id.clone(),
+                clip_id: clip.id.clone(),
+                semitones,
+            }
+        } else {
+            dawwny_core::Command::QuantizeClip {
+                track_id: track.id.clone(),
+                clip_id: clip.id.clone(),
+                grid: self.grid,
+            }
+        };
+        match dawwny_core::apply_commands(&self.project, &[command]) {
+            Ok(project) => {
+                self.edit(|p| p.tracks[ti].clips[ci] = project.tracks[ti].clips[ci].clone())
+            }
+            Err(error) => self.fail(format!("Clip edit rejected: {error}")),
+        }
+    }
+
     pub fn duplicate_clip(&mut self) {
         let ti = self.selected_track;
         let ci = self.selected_clip;
@@ -512,6 +560,12 @@ impl Studio {
     }
 
     fn housekeeping(&mut self, ctx: &egui::Context) {
+        self.collect_recording();
+        if self.recording()
+            && (!self.playing() || self.position() >= self.project.length_bars as f64 * 4.0)
+        {
+            self.finish_recording();
+        }
         if let Some(audio) = &mut self.audio {
             audio.collect_retired();
         }
@@ -552,6 +606,7 @@ impl Studio {
                             self.project.revision
                         );
                         self.error = false;
+                        self.finish_recording();
                         self.sync_audio();
                     }
                     Err(e) => self.fail(format!("Session update rejected: {e}")),
@@ -633,8 +688,11 @@ impl eframe::App for Studio {
             if self.export_job.is_some() {
                 ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
                 self.fail("An export is still running. Close the studio after it finishes.".into());
-            } else if !self.commit() {
-                ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+            } else {
+                self.finish_recording();
+                if !self.commit() {
+                    ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+                }
             }
         }
         if !ctx.wants_keyboard_input()
@@ -671,6 +729,11 @@ impl eframe::App for Studio {
         if ctx.input_mut(|i| i.consume_key(egui::Modifiers::CTRL, egui::Key::O)) {
             self.open();
         }
+        if !ctx.wants_keyboard_input()
+            && ctx.input(|i| i.key_pressed(egui::Key::R) && i.modifiers.is_none())
+        {
+            self.toggle_recording();
+        }
         self.header(ctx);
         self.footer(ctx);
         if self.show_agents {
@@ -696,11 +759,13 @@ impl eframe::App for Studio {
                 ui.separator();
                 ui.label("Double-click a section above the ruler to select and cycle it. C enables or disables cycle.");
                 ui.label("Use Sections to edit arrangement markers. Samples imports local SF2 instruments.");
-                ui.label("Hardware MIDI input is available in Keys. Audio recording, automation and VST3 hosting are planned.");
+                ui.label("R records Keys or MIDI to a new clip. Piano roll → Notes quantizes and transposes performances.");
+                ui.label("Audio recording, automation and VST3 hosting are planned.");
             });
         }
     }
     fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
+        self.finish_recording();
         self.commit();
         self.stop();
     }

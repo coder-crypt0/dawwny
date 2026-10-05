@@ -4,9 +4,9 @@
 
 [![Native workspace](https://github.com/coder-crypt0/dawwny/actions/workflows/ci.yml/badge.svg)](https://github.com/coder-crypt0/dawwny/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-94ad68)](LICENSE)
 
-Compose, seek and cycle song sections in a native arrangement editor or connect your own AI through MCP. Both edit the same musical document. Rust synthesizers turn it into sound, with no Electron, Chromium, WebView, bundled model, cloud account, or mandatory sample-library download.
+Compose, record MIDI performances, quantize notes and cycle song sections in a native arrangement editor or connect your own AI through MCP. Both edit the same musical document. Rust synthesizers turn it into sound, with no Electron, Chromium, WebView, bundled model, cloud account, or mandatory sample-library download.
 
-**v0.1 is a working native prototype for MIDI composition.** It is not yet a full replacement for Logic Pro or another production DAW. Native plugins, recording, audio tracks, automation, and remote access are on the roadmap.
+**v0.1 is a working native prototype for MIDI composition.** It is not yet a full replacement for Logic Pro or another production DAW. Native plugins, audio recording/tracks, automation, and remote access are on the roadmap.
 
 ![The native arrangement and piano roll](docs/images/studio.png)
 

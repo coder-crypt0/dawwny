@@ -183,6 +183,16 @@ pub enum Command {
         track_id: String,
         clip: Clip,
     },
+    QuantizeClip {
+        track_id: String,
+        clip_id: String,
+        grid: f64,
+    },
+    TransposeClip {
+        track_id: String,
+        clip_id: String,
+        semitones: i8,
+    },
     AddNotes {
         track_id: String,
         clip_id: String,

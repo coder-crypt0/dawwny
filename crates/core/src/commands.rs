@@ -1,5 +1,5 @@
 use crate::*;
-use anyhow::{Context, Result, bail};
+use anyhow::{Context, Result, bail, ensure};
 
 fn track_mut<'a>(p: &'a mut Project, id: &str) -> Result<&'a mut Track> {
     p.tracks
@@ -97,6 +97,40 @@ pub fn apply_commands(p: &Project, commands: &[Command]) -> Result<Project> {
             } => clip_mut(track_mut(&mut n, track_id)?, clip_id)?
                 .notes
                 .extend(notes.clone()),
+            Command::QuantizeClip {
+                track_id,
+                clip_id,
+                grid,
+            } => {
+                ensure!(
+                    grid.is_finite() && (0.0625..=4.0).contains(grid),
+                    "Quantize grid must be 0.0625–4 quarter-note beats"
+                );
+                let clip = clip_mut(track_mut(&mut n, track_id)?, clip_id)?;
+                for note in &mut clip.notes {
+                    let latest = ((clip.length - note.duration).max(0.0) / grid).floor() * grid;
+                    note.start = ((note.start / grid).round() * grid).min(latest).max(0.0);
+                }
+            }
+            Command::TransposeClip {
+                track_id,
+                clip_id,
+                semitones,
+            } => {
+                ensure!(
+                    (-24..=24).contains(semitones),
+                    "Transpose must be between -24 and 24 semitones"
+                );
+                let clip = clip_mut(track_mut(&mut n, track_id)?, clip_id)?;
+                for note in &mut clip.notes {
+                    let pitch = note.pitch as i16 + *semitones as i16;
+                    ensure!(
+                        (0..=127).contains(&pitch),
+                        "Transposing would move a note outside MIDI pitch 0–127"
+                    );
+                    note.pitch = pitch as u8;
+                }
+            }
             Command::RemoveNote {
                 track_id,
                 clip_id,

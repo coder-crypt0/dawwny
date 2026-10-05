@@ -195,6 +195,12 @@ impl Studio {
                                 if ui.add(play).on_hover_text("Play / pause · Space").clicked() {
                                     self.toggle_play();
                                 }
+                                let recording = self.recording();
+                                if ui.add(egui::Button::new(
+                                    egui::RichText::new("●").size(18.0).color(if recording { BG } else { RECORD }),
+                                ).fill(if recording { RECORD } else { CONTROL }).min_size(Vec2::new(40.0, 34.0)))
+                                    .on_hover_text("Record selected instrument · R · starts a linear take; cycle is disabled")
+                                    .clicked() { self.toggle_recording(); }
                                 let cycle_tip = self.project.cycle.map_or_else(
                                     || "Cycle whole song · C".to_owned(),
                                     |range| {
@@ -949,6 +955,16 @@ impl Studio {
                     .text("Velocity")
                     .show_value(false),
             );
+            ui.menu_button("Notes", |ui| {
+                if ui.button(format!("Quantize to 1/{} grid", (4.0 / self.grid) as u32)).on_hover_text("Align note starts, preserving duration and velocity · Undo restores the performance").clicked() {
+                    self.transform_clip(None); ui.close();
+                }
+                ui.menu_button("Transpose", |ui| {
+                    for (semitones, label) in [(-12, "Down an octave"), (-1, "Down a semitone"), (1, "Up a semitone"), (12, "Up an octave")] {
+                        if ui.button(label).clicked() { self.transform_clip(Some(semitones)); ui.close(); }
+                    }
+                });
+            });
             if ui.button("Duplicate").clicked() {
                 self.duplicate_clip();
             }

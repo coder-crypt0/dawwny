@@ -17,6 +17,9 @@ struct Telemetry {
     panic: AtomicBool,
     monitoring: AtomicBool,
     device_error: AtomicBool,
+    recording: AtomicBool,
+    recording_overflow: AtomicBool,
+    recording_end: AtomicU64,
 }
 // Fixed-size mix snapshots avoid allocating for fader moves on either thread.
 #[allow(clippy::large_enum_variant)]
@@ -30,7 +33,14 @@ enum Command {
     MonitorMix(MixSnapshot),
     Live(LiveEvent),
     Cycle(Option<CycleRange>),
+    Capture(bool),
 }
+#[derive(Clone, Copy, Debug)]
+pub struct RecordedEvent {
+    pub beat: f64,
+    pub event: LiveEvent,
+}
+
 struct Runtime {
     arrangement: Box<Renderer>,
     monitor: Box<Renderer>,
@@ -41,6 +51,8 @@ struct Runtime {
     tail: u64,
     cycle: Option<CycleRange>,
     cycle_frames: Option<(u64, u64)>,
+    recording: bool,
+    recorded: Producer<RecordedEvent>,
 }
 impl Runtime {
     fn begin_block(&mut self) {
@@ -72,22 +84,57 @@ impl Runtime {
                 }
                 Command::Mix(mix) => self.arrangement.apply_mix(mix),
                 Command::MonitorMix(mix) => self.monitor.apply_mix(mix),
-                Command::Live(event) => self.monitor.live_event(event),
+                Command::Live(event) => {
+                    self.capture(event);
+                    self.monitor.live_event(event);
+                }
+                Command::Capture(enabled) => {
+                    if !enabled {
+                        self.midi_input();
+                    }
+                    self.recording = enabled;
+                    if !enabled {
+                        self.state.recording_end.store(
+                            self.arrangement.position_beats().to_bits(),
+                            Ordering::Relaxed,
+                        );
+                        self.state.recording.store(false, Ordering::Release);
+                    }
+                }
                 Command::Cycle(range) => {
                     self.cycle = range;
                     self.update_cycle_frames();
                 }
             }
         }
+        self.midi_input();
+        if self.state.panic.swap(false, Ordering::AcqRel) {
+            self.capture(LiveEvent::AllOff);
+            self.monitor.live_event(LiveEvent::AllOff);
+            self.tail = 0;
+        }
+    }
+    fn midi_input(&mut self) {
         for _ in 0..256 {
             let Ok(event) = self.midi.pop() else {
                 break;
             };
+            self.capture(event);
             self.monitor.live_event(event);
         }
-        if self.state.panic.swap(false, Ordering::AcqRel) {
-            self.monitor.live_event(LiveEvent::AllOff);
-            self.tail = 0;
+    }
+    fn capture(&mut self, event: LiveEvent) {
+        if self.recording
+            && self.state.recording.load(Ordering::Acquire)
+            && self
+                .recorded
+                .push(RecordedEvent {
+                    beat: self.arrangement.position_beats(),
+                    event,
+                })
+                .is_err()
+        {
+            self.state.recording_overflow.store(true, Ordering::Release);
         }
     }
     fn update_cycle_frames(&mut self) {
@@ -159,6 +206,8 @@ pub struct AudioEngine {
     retired: Option<Consumer<Box<Renderer>>>,
     midi_events: Arc<Mutex<Producer<LiveEvent>>>,
     midi_consumer: Option<Consumer<LiveEvent>>,
+    recorded: Consumer<RecordedEvent>,
+    recording_producer: Option<Producer<RecordedEvent>>,
     midi: Option<midir::MidiInputConnection<()>>,
     midi_name: Option<String>,
     project: Option<Project>,
@@ -173,6 +222,7 @@ impl AudioEngine {
             .context("No default output device")?;
         let config = device.default_output_config()?;
         let (producer, consumer) = RingBuffer::new(256);
+        let (recording_producer, recorded) = RingBuffer::new(4096);
         Ok(Self {
             stream: None,
             state: Arc::default(),
@@ -180,6 +230,8 @@ impl AudioEngine {
             retired: None,
             midi_events: Arc::new(Mutex::new(producer)),
             midi_consumer: Some(consumer),
+            recorded,
+            recording_producer: Some(recording_producer),
             midi: None,
             midi_name: None,
             project: None,
@@ -205,6 +257,9 @@ impl AudioEngine {
             .context("Audio stream is not prepared")?;
         if queue.push(command).is_err() {
             self.state.panic.store(true, Ordering::Release);
+            if self.state.recording.load(Ordering::Acquire) {
+                self.state.recording_overflow.store(true, Ordering::Release);
+            }
             bail!("Audio command queue is full; try again");
         }
         Ok(())
@@ -251,6 +306,11 @@ impl AudioEngine {
                 arrangement,
                 cycle: project.cycle,
                 cycle_frames,
+                recording: false,
+                recorded: self
+                    .recording_producer
+                    .take()
+                    .context("Recording stream is already prepared")?,
                 monitor: Self::monitor(project, selected, self.rate)?,
                 commands,
                 retired,
@@ -361,6 +421,43 @@ impl AudioEngine {
         self.state.beat.store(beat.to_bits(), Ordering::Release);
         Ok(())
     }
+    pub fn start_recording(&mut self) -> Result<()> {
+        while self.recorded.pop().is_ok() {}
+        self.state
+            .recording_overflow
+            .store(false, Ordering::Release);
+        self.state.recording.store(true, Ordering::Release);
+        if let Err(error) = self.send(Command::Capture(true)) {
+            self.state.recording.store(false, Ordering::Release);
+            return Err(error);
+        }
+        Ok(())
+    }
+    /// Finish at an audio-block boundary before draining the final captured events.
+    pub fn finish_recording(&mut self) -> Result<f64> {
+        let result = self.send(Command::Capture(false));
+        if let Err(error) = result {
+            self.state.recording.store(false, Ordering::Release);
+            return Err(error);
+        }
+        let deadline = std::time::Instant::now() + std::time::Duration::from_millis(100);
+        while self.state.recording.load(Ordering::Acquire) {
+            if self.device_failed() || std::time::Instant::now() >= deadline {
+                self.state.recording.store(false, Ordering::Release);
+                bail!("The audio device did not acknowledge the end of the recording");
+            }
+            std::thread::sleep(std::time::Duration::from_millis(1));
+        }
+        Ok(f64::from_bits(
+            self.state.recording_end.load(Ordering::Relaxed),
+        ))
+    }
+    pub fn recorded_event(&mut self) -> Option<RecordedEvent> {
+        self.recorded.pop().ok()
+    }
+    pub fn recording_overflowed(&self) -> bool {
+        self.state.recording_overflow.load(Ordering::Acquire)
+    }
     pub fn live_event(&mut self, event: LiveEvent) -> Result<()> {
         self.send(Command::Live(event))
     }
@@ -434,6 +531,9 @@ impl AudioEngine {
                             match events.lock() {
                                 Ok(mut queue) => {
                                     if queue.push(event).is_err() {
+                                        if state.recording.load(Ordering::Acquire) {
+                                            state.recording_overflow.store(true, Ordering::Release);
+                                        }
                                         state.panic.store(true, Ordering::Release);
                                     }
                                 }
@@ -552,6 +652,7 @@ mod tests {
         let (producer, commands) = RingBuffer::new(32);
         let (retired, consumer) = RingBuffer::new(32);
         let (_, midi) = RingBuffer::new(256);
+        let (recorded, _) = RingBuffer::new(4096);
         (
             Runtime {
                 arrangement: Box::new(Renderer::new(compile(&p, 16000).unwrap())),
@@ -563,10 +664,85 @@ mod tests {
                 tail: 0,
                 cycle: None,
                 cycle_frames: None,
+                recording: false,
+                recorded,
             },
             producer,
             consumer,
         )
+    }
+    #[test]
+    fn recording_timestamps_input_on_the_audio_clock_without_callback_allocations() {
+        let (mut runtime, mut commands, _retired) = runtime();
+        let (recorded, mut events) = RingBuffer::new(4);
+        runtime.recorded = recorded;
+        runtime.state.recording.store(true, Ordering::Release);
+        runtime.state.playing.store(true, Ordering::Release);
+        commands.push(Command::Capture(true)).ok().unwrap();
+        commands
+            .push(Command::Live(LiveEvent::NoteOn {
+                channel: 16,
+                pitch: 60,
+                velocity: 0.7,
+            }))
+            .ok()
+            .unwrap();
+        COUNT.with(|c| c.set(0));
+        TRACK.with(|t| t.set(true));
+        runtime.begin_block();
+        for _ in 0..16000 {
+            std::hint::black_box(runtime.next_frame());
+        }
+        TRACK.with(|t| t.set(false));
+        assert_eq!(COUNT.with(Cell::get), 0);
+        let note = events.pop().unwrap();
+        assert_eq!(note.beat, 0.0);
+        assert!(matches!(note.event, LiveEvent::NoteOn { pitch: 60, .. }));
+        let end = runtime.arrangement.position_beats();
+        let (mut midi, input) = RingBuffer::new(4);
+        runtime.midi = input;
+        midi.push(LiveEvent::Sustain {
+            channel: 0,
+            down: true,
+        })
+        .ok()
+        .unwrap();
+        commands
+            .push(Command::Live(LiveEvent::NoteOff {
+                channel: 16,
+                pitch: 60,
+            }))
+            .ok()
+            .unwrap();
+        commands.push(Command::Capture(false)).ok().unwrap();
+        commands
+            .push(Command::Live(LiveEvent::NoteOn {
+                channel: 16,
+                pitch: 64,
+                velocity: 0.5,
+            }))
+            .ok()
+            .unwrap();
+        runtime.begin_block();
+        let off = events.pop().unwrap();
+        assert_eq!(off.beat, end);
+        assert!(matches!(off.event, LiveEvent::NoteOff { pitch: 60, .. }));
+        let pedal = events.pop().unwrap();
+        assert_eq!(pedal.beat, end);
+        assert!(matches!(pedal.event, LiveEvent::Sustain { down: true, .. }));
+        assert!(events.pop().is_err());
+        assert!(!runtime.state.recording.load(Ordering::Acquire));
+        assert_eq!(
+            f64::from_bits(runtime.state.recording_end.load(Ordering::Relaxed)),
+            end
+        );
+        let (recorded, _events) = RingBuffer::new(1);
+        runtime.recorded = recorded;
+        runtime.recording = true;
+        runtime.state.recording.store(true, Ordering::Release);
+        runtime.capture(LiveEvent::AllOff);
+        runtime.capture(LiveEvent::AllOff);
+        assert!(runtime.state.recording_overflow.load(Ordering::Acquire));
     }
     #[test]
     fn cycle_wraps_at_the_exact_frame_and_survives_pause_mix_and_tempo_changes() {

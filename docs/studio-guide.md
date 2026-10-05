@@ -21,9 +21,19 @@ Edits autosave after a short debounce. Undo/redo retain up to 32 edit groups in 
 
 ## Play instruments
 
-Open **Keys** or press **Ctrl+K** for musical typing. A–L play the white notes, with the displayed upper-row keys for sharps; **Z/X** change octave. Velocity is adjustable. Click the on-screen keys to audition the selected track. Input uses a separate monitor path and works with the arrangement stopped or paused; it does not insert or record notes into a clip.
+Open **Keys** or press **Ctrl+K** for musical typing. A–L play the white notes, with the displayed upper-row keys for sharps; **Z/X** change octave. Velocity is adjustable. Click the on-screen keys to audition the selected track. Input uses a separate monitor path and works with the arrangement stopped or paused; auditioning leaves clips unchanged until you start recording.
 
-Use **Refresh MIDI devices**, then choose your hardware controller. Native MIDI input supports note-on/off, velocity, sustain pedal (CC64), and all-notes-off. The **Panic** button releases keyboard/controller notes. Typing into a text field or losing window focus releases computer-keyboard notes. Hardware MIDI has not been tested against a connected physical controller on the development machine. Input recording, pitch bend, expression mapping, and device hot-plug recovery remain open work.
+Use **Refresh MIDI devices**, then choose your hardware controller. Native MIDI input supports note-on/off, velocity, sustain pedal (CC64), and all-notes-off. The **Panic** button releases keyboard/controller notes. Typing into a text field or losing window focus releases computer-keyboard notes. Hardware MIDI has not been tested against a connected physical controller on the development machine. Pitch bend, expression mapping, and device hot-plug recovery remain open work.
+
+## Record and finish a performance
+
+Select an instrument track, place the playhead, then press **R** or the red **●** transport button. Musical typing opens and playback starts a linear take; cycle is disabled. Play the computer keyboard or a connected MIDI controller. **R**, **Pause**, or **Stop** finishes the performance into a new MIDI clip without replacing existing clips. Seeking, switching tracks, opening a project, saving a copy, exporting, or closing also finishes the take. Recording stops at the song end.
+
+Velocity is preserved. Sustain extends note durations until pedal release; notes still held when recording ends are closed at that position. Performances keep their timing, measured at audio-block boundaries, and enter the normal undo history. Choose **Piano roll → Notes → Quantize** to align starts to the current grid while retaining durations and velocity. **Notes → Transpose** moves a whole clip by a semitone or octave; edits that exceed MIDI pitch bounds are rejected. Undo restores the original performance.
+
+A finished take also gets a local recovery project in `.dawwny-takes` beside the session. These copies are excluded from Git. If an agent removes the track or shortens the song during a take, the recovery copy preserves the performance that cannot fit. If both insertion and backup fail, Keys offers **Save recovered take** and a new recording is blocked until it is saved. Input overflow is reported in Keys rather than presented as a complete take.
+
+This stage records MIDI notes, not microphone audio. Count-in, metronome, punch-in/out, loop-take comping and record latency compensation are not implemented.
 
 ## Files and export
 
@@ -41,6 +51,6 @@ Example agent request: “Read this session, add a soft bass line following the 
 
 ## Current boundaries
 
-This is a MIDI composition prototype, not a full Logic Pro replacement. Native plugin hosting, sample/audio tracks, recording, input recording and controller mapping, automation lanes, tempo maps, plugin delay compensation, per-note expression, stems, and remote collaboration are future milestones. It has no network listener and no site deployment. Hostinger will be considered when remote access is implemented.
+This is a MIDI composition prototype, not a full Logic Pro replacement. Native plugin hosting, sample/audio tracks, audio recording and controller mapping, automation lanes, tempo maps, plugin delay compensation, per-note expression, stems, and remote collaboration are future milestones. It has no network listener and no site deployment. Hostinger will be considered when remote access is implemented.
 
 **Sample instruments:** in Sounds, open Sample instruments, import a local SF2, search its actual names and use a preset. Ctrl+K auditions it. [Installation and agent workflow](sample-instruments.md).

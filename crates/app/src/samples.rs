@@ -115,6 +115,7 @@ impl Studio {
                 if self.samples.loading() {ui.spinner();ui.label("Loading samples…");}
             });
             if let Some(e)=&self.samples.error {ui.colored_label(crate::design::ERROR,e);}
+            let loading = self.samples.loading();
             let Some(bank)=&self.samples.bank else {
                 ui.add_space(28.0);ui.heading("Bring your instruments");
                 ui.label("Import an SF2 bank for sampled piano, orchestral instruments, guitars, drums, and more. Choose a preset, use it on a track, then play with your keyboard or MIDI controller.");
@@ -133,7 +134,7 @@ impl Studio {
                     ui.horizontal(|ui| {
                         let r=ui.selectable_label(self.samples.selected==Some(id),&p.name);
                         if r.clicked(){self.samples.selected=Some(id);}
-                        if r.double_clicked(){use_preset=Some(id);}
+                        if r.double_clicked() && !loading{use_preset=Some(id);}
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center),|ui|{ui.label(egui::RichText::new(format!("{} / {:03}",if p.bank==128 {"Kit".into()}else{format!("Bank {}",p.bank)},p.program)).small().weak());});
                     });
                 }

@@ -110,6 +110,9 @@ impl Studio {
                         self.release_typing();if let Some(a)=&mut self.audio {a.all_notes_off();}
                     }
                 });
+                if self.recording() { ui.colored_label(crate::design::RECORD, "Recording to a new clip · R or Pause finishes · cycle is disabled"); }
+                if let Some(warning) = &self.recording.warning { ui.colored_label(crate::design::ERROR, warning); }
+                if self.recording.recovery.is_some() && ui.button("Save recovered take…").clicked() { self.save_recovered_take(); }
                 ui.horizontal(|ui| {
                     ui.add(egui::DragValue::new(&mut self.keyboard.octave).range(1..=7).prefix("Octave "));
                     ui.add(egui::Slider::new(&mut self.keyboard.velocity,0.05..=1.0).text("Velocity"));
@@ -162,7 +165,7 @@ impl Studio {
                     if let Some(pitch)=mouse_pitch {self.keyboard_note(LiveEvent::NoteOn {channel:16,pitch,velocity:self.keyboard.velocity});}
                     self.keyboard.mouse=mouse_pitch;
                 }
-                ui.label(egui::RichText::new("Play A–L with the upper keys for sharps. Input plays the selected track without changing its MIDI clips.").small().weak());
+                ui.label(egui::RichText::new("Play A–L with the upper keys for sharps. Input plays the selected track. Press R to record a new MIDI clip.").small().weak());
             });
         self.keyboard.open = open;
         if !open {

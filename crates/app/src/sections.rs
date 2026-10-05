@@ -4,6 +4,7 @@ use eframe::egui;
 
 impl Studio {
     pub fn toggle_cycle(&mut self) {
+        self.finish_recording();
         self.looped = !self.looped;
         if let Some(audio) = &self.audio {
             audio.set_looped(self.looped);
@@ -11,6 +12,7 @@ impl Studio {
     }
 
     pub fn cycle_section(&mut self, index: usize) {
+        self.finish_recording();
         let Some(section) = self.project.sections.get(index).cloned() else {
             return;
         };
