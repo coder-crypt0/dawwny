@@ -22,8 +22,18 @@ def main():
             archive.writestr(info, content)
     path = root / "crates/app/assets/licenses.zip"
     if args.check:
-        if not path.is_file() or path.read_bytes() != output.getvalue():
-            raise SystemExit("Embedded licenses are stale; run python scripts/embed-licenses.py")
+        if not path.is_file():
+            raise SystemExit("Embedded licenses are missing; run python scripts/embed-licenses.py")
+        with zipfile.ZipFile(path) as archive:
+            if archive.testzip() is not None:
+                raise SystemExit("Embedded license archive is damaged")
+            embedded = {name: archive.read(name) for name in archive.namelist()}
+        # Deflate bytes can differ between Python/zlib versions; notices must match exactly.
+        changed = sorted(name for name in embedded.keys() | entries.keys()
+                         if embedded.get(name) != entries.get(name))
+        if changed:
+            raise SystemExit("Embedded licenses are stale: " + ", ".join(changed[:20])
+                             + "; run python scripts/embed-licenses.py")
         print("PASS: embedded license notices match the locked Windows dependencies")
     else:
         path.parent.mkdir(parents=True, exist_ok=True)

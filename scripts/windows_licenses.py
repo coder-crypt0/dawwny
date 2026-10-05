@@ -7,7 +7,7 @@ from pathlib import Path
 
 def third_party_notices(root: Path) -> dict[str, bytes]:
     def cargo(*args):
-        return subprocess.check_output(["cargo", *args], cwd=root, text=True, encoding="utf-8")
+        return subprocess.check_output(["cargo", "--color", "never", *args], cwd=root, text=True, encoding="utf-8")
     data = json.loads(cargo("metadata", "--format-version", "1", "--locked", "--filter-platform", "x86_64-pc-windows-msvc"))
     tree = cargo("tree", "--workspace", "--target", "x86_64-pc-windows-msvc", "--edges", "normal", "--prefix", "none", "--format", "{p}", "--locked")
     selected = set(re.findall(r"(?m)^([A-Za-z0-9_-]+) v([^ \n]+)", tree))
@@ -37,7 +37,11 @@ def third_party_notices(root: Path) -> dict[str, bytes]:
             for path in sorted(supplemental.rglob("*")):
                 if path.is_file():
                     relative = path.relative_to(supplemental).as_posix()
-                    entries[f"licenses/{name}/{relative}"] = path.read_bytes()
+                    content = path.read_bytes()
+                    if path.suffix == ".md":
+                        # Git checks these authored source notes out as LF on every platform.
+                        content = content.replace(b"\r\n", b"\n")
+                    entries[f"licenses/{name}/{relative}"] = content
     entries["THIRD-PARTY-NOTICES.txt"] = ("\n".join(lines) + "\n").encode("utf-8")
     return entries
 
