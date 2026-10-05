@@ -1,7 +1,7 @@
 use crate::studio::{EditorTab, Studio};
 use dawwny_audio::{SampleBank, load_sample_bank};
 use dawwny_core::{Instrument, SampleInstrument};
-use eframe::egui::{self, Color32};
+use eframe::egui;
 use std::{
     path::PathBuf,
     sync::{Arc, mpsc},
@@ -114,7 +114,7 @@ impl Studio {
                 if ui.button("Musical typing").clicked() {play_keys=true;}
                 if self.samples.loading() {ui.spinner();ui.label("Loading samples…");}
             });
-            if let Some(e)=&self.samples.error {ui.colored_label(Color32::from_rgb(235,145,130),e);}
+            if let Some(e)=&self.samples.error {ui.colored_label(crate::design::ERROR,e);}
             let Some(bank)=&self.samples.bank else {
                 ui.add_space(28.0);ui.heading("Bring your instruments");
                 ui.label("Import an SF2 bank for sampled piano, orchestral instruments, guitars, drums, and more. Choose a preset, use it on a track, then play with your keyboard or MIDI controller.");

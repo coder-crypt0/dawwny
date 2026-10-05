@@ -1,9 +1,9 @@
 use dawwny_core::{
     Effect, EffectSlot, FilterMode, Instrument, Oscillator, SynthPatch, Track, Waveform,
 };
-use eframe::egui::{self, Color32, Pos2, Stroke, Vec2};
+use eframe::egui::{self, Pos2, Stroke, Vec2};
 
-const ACCENT: Color32 = Color32::from_rgb(203, 231, 143);
+use crate::design::{ACCENT, MUTED, mix_toggle};
 fn slider(ui: &mut egui::Ui, value: &mut f32, range: std::ops::RangeInclusive<f32>, name: &str) {
     ui.add(egui::Slider::new(value, range).text(name));
 }
@@ -16,11 +16,7 @@ fn logarithmic(
     ui.add(egui::Slider::new(value, range).logarithmic(true).text(name));
 }
 fn caption(ui: &mut egui::Ui, label: &str) {
-    ui.label(
-        egui::RichText::new(label)
-            .small()
-            .color(Color32::from_gray(155)),
-    );
+    ui.label(egui::RichText::new(label).small().color(MUTED));
 }
 fn wave_name(w: Waveform) -> &'static str {
     match w {
@@ -292,8 +288,8 @@ fn modulation_mix(ui: &mut egui::Ui, track: &mut Track) {
     slider(ui, &mut track.gain, 0.0..=1.0, "Gain");
     slider(ui, &mut track.pan, -1.0..=1.0, "Pan");
     ui.horizontal(|ui| {
-        ui.toggle_value(&mut track.mute, "Mute");
-        ui.toggle_value(&mut track.solo, "Solo");
+        mix_toggle(ui, &mut track.mute, "Mute", true);
+        mix_toggle(ui, &mut track.solo, "Solo", false);
     });
     ui.add_space(12.0);
     ui.collapsing("Legacy ambience",|ui| {

@@ -57,7 +57,7 @@ def main() -> None:
     archive = out_dir / f"dawwny-{args.version}-windows-x64.zip"
     top = f"dawwny-{args.version}"
     files = [(required[0], "dawwny.exe"), (required[1], "dawwny-mcp.exe")]
-    for rel in ("README.md", "LICENSE"):
+    for rel in ("README.md", "LICENSE", "scripts/install-sound-bank.py"):
         path = root / rel
         if path.is_file(): files.append((path, rel))
     for path in sorted((root / "docs").glob("*.md")):

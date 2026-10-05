@@ -20,6 +20,8 @@ pub struct Studio {
     pub audio: Option<AudioEngine>,
     pub selected_track: usize,
     pub selected_clip: usize,
+    pub selected_section: Option<usize>,
+    pub show_sections: bool,
     pub tab: EditorTab,
     pub editor_expanded: bool,
     pub looped: bool,
@@ -81,6 +83,8 @@ impl Studio {
             audio,
             selected_track: 0,
             selected_clip: 0,
+            selected_section: None,
+            show_sections: false,
             tab: EditorTab::Piano,
             editor_expanded: false,
             looped: true,
@@ -490,6 +494,12 @@ impl Studio {
     }
 
     pub fn clamp_selection(&mut self) {
+        if self
+            .selected_section
+            .is_some_and(|index| index >= self.project.sections.len())
+        {
+            self.selected_section = None;
+        }
         self.selected_track = self
             .selected_track
             .min(self.project.tracks.len().saturating_sub(1));
@@ -636,6 +646,12 @@ impl eframe::App for Studio {
         if self.preview.as_ref().is_some_and(|p| p.is_playing()) {
             ctx.request_repaint_after(Duration::from_millis(100));
         }
+        if !ctx.wants_keyboard_input()
+            && !self.keyboard.open
+            && ctx.input(|i| i.key_pressed(egui::Key::C))
+        {
+            self.toggle_cycle();
+        }
         if !ctx.wants_keyboard_input() && ctx.input(|i| i.key_pressed(egui::Key::Space)) {
             self.toggle_play();
         }
@@ -669,16 +685,18 @@ impl eframe::App for Studio {
         }
         self.keyboard_window(ctx);
         self.sample_window(ctx);
+        self.sections_window(ctx);
         if self.show_help {
             egui::Window::new("Studio guide").open(&mut self.show_help).resizable(false).show(ctx,|ui|{
-                ui.label("Space — play / stop     Ctrl+S — save     Ctrl+Z / Ctrl+Y — undo / redo");
+                ui.label("Space — play / pause     Ctrl+S — save     Ctrl+Z / Ctrl+Y — undo / redo");
                 ui.label("Double-click an empty track lane to create a clip. Drag a clip to move it.");
                 ui.label("Select a clip, then click the piano grid to add a note. Drag notes to move them.");
                 ui.label("Right-click a note to edit its length, velocity, pitch, or delete it. Sound controls edit the selected track.");
                 ui.label("Edits autosave locally. Click or drag the ruler to seek. Space pauses and resumes. Ctrl+K opens musical typing.");
                 ui.separator();
-                ui.label("Foundation: fixed 4/4, built-in instruments and MIDI clips. Audio recording, VST3 hosting,");
-                ui.label("automation, hardware MIDI, and remote access are planned. No AI model is bundled.");
+                ui.label("Double-click a section above the ruler to select and cycle it. C enables or disables cycle.");
+                ui.label("Use Sections to edit arrangement markers. Samples imports local SF2 instruments.");
+                ui.label("Hardware MIDI input is available in Keys. Audio recording, automation and VST3 hosting are planned.");
             });
         }
     }

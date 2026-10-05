@@ -1,3 +1,4 @@
+use crate::design::{CONTROL, CONTROL_RADIUS, SELECTED, SURFACE, SURFACE_RADIUS};
 use crate::studio::{EditorTab, Studio};
 use dawwny_core::{Clip, Instrument, Note, Project, SoundInfo, Track};
 use eframe::egui::{self, Color32, Vec2};
@@ -198,7 +199,7 @@ impl Studio {
         let mut load = None;
         let mut favorite = None;
         egui::SidePanel::left("library").default_width(294.0).width_range(260.0..=370.0).resizable(true)
-            .frame(egui::Frame::new().fill(Color32::from_rgb(30,33,40)).corner_radius(16).inner_margin(14).outer_margin(egui::Margin{left:10,right:4,top:4,bottom:8}))
+            .frame(egui::Frame::new().fill(SURFACE).corner_radius(SURFACE_RADIUS).inner_margin(12).outer_margin(egui::Margin{left:10,right:4,top:4,bottom:8}))
             .show(ctx,|ui| {
                 ui.horizontal(|ui|{ui.heading("Sound library");ui.with_layout(egui::Layout::right_to_left(egui::Align::Center),|ui|{if ui.button("×").on_hover_text("Hide library · L").clicked(){self.show_library=false;}});});
                 ui.label(egui::RichText::new("2,310 sounds · Dawn collection").small().weak());
@@ -239,7 +240,7 @@ impl Studio {
                                 let selected=self.library.selected.as_ref()==Some(&info.id);
                                 let (rect,response)=ui.allocate_exact_size(Vec2::new(ui.available_width(),46.0),egui::Sense::click());
                                 if selected || response.hovered() {
-                                    ui.painter().rect_filled(rect,9,if selected {Color32::from_rgb(63,75,47)}else{Color32::from_rgb(40,44,52)});
+                                    ui.painter().rect_filled(rect,CONTROL_RADIUS,if selected {SELECTED}else{CONTROL});
                                 }
                                 let mut content=ui.new_child(egui::UiBuilder::new().max_rect(rect.shrink2(Vec2::new(9.0,5.0))).layout(egui::Layout::top_down(egui::Align::Min)));
                                 content.spacing_mut().item_spacing.y=2.0;

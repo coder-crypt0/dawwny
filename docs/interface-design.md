@@ -1,16 +1,20 @@
-# Studio interface
+# Studio interface rules
 
-Dawwny uses a native egui/Glow workspace. The arrangement remains the center of composition; the library is a leading sidebar, and the piano roll, sound designer, and mixer share a resizable lower editor. Expand gives detailed editing the full workspace without opening another window.
+Dawwny follows the interaction principles in Apple's [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines), particularly [buttons](https://developer.apple.com/design/human-interface-guidelines/buttons), [toolbars](https://developer.apple.com/design/human-interface-guidelines/toolbars), and [layout](https://developer.apple.com/design/human-interface-guidelines/layout). It remains a native Windows/Linux interface rather than an imitation of Apple's platform materials.
 
-The design follows the grouping and hierarchy guidance in Apple's [toolbars](https://developer.apple.com/design/human-interface-guidelines/toolbars) and [sidebars](https://developer.apple.com/design/human-interface-guidelines/sidebars), adapted to a native Windows application:
+The shared values in `crates/app/src/design.rs` define roles across the library, arrangement, sound designer, mixer and floating windows:
 
-- Project actions live at the leading edge, transport and timing form one group, and view/export actions sit at the trailing edge.
-- The sound library can collapse when composition needs more space. Search, category filtering, favorites, and preview are available without opening nested dialogs.
-- Rounded workspace surfaces, controls, clips, notes, and mixer strips use a consistent radius scale. Flat musical grids preserve accurate alignment and timing.
-- Most interface chrome is neutral. Track colors identify musical material; the lime accent marks transport and active controls.
-- Windows uses the locally installed Segoe UI font, with egui's bundled fonts as fallback. No Apple fonts, icons, or other proprietary assets are redistributed.
-- Familiar shortcuts, visible action names, hover descriptions, note context menus, and non-destructive preview reduce the need to learn a new workflow.
+| Role | Corner radius in logical points | Use |
+| --- | ---: | --- |
+| Control | 8 | Buttons, fields, selection rows |
+| Surface | 12 | Editor panels, channel strips, grouped content |
+| Window | 14 | Floating editor windows |
+| Musical content | 6 | MIDI clips, notes, keyboard keys, sections |
 
-The list virtualizes visible rows rather than constructing thousands of widgets. Search results cache until filters change; preset DSP settings are generated only when needed. The interface draws on interaction and at a limited rate during playback instead of continuously animating an idle workspace.
+Grid lines and boundaries stay straight for timing alignment. Tiny meters and marks use smaller radii. These are intentional differences in role, rather than per-screen decoration. Spacing uses an 8-point baseline, a 6-point compact row gap and 12-point internal panel padding.
 
-This is an iterative native prototype. The current piano canvas lacks full keyboard editing and screen-reader navigation; drag feedback, focus behavior, contrast, and compact-screen layouts need continued usability work. HIG-informed styling does not imply complete Apple HIG compliance or parity with a mature DAW.
+Green identifies the principal playback action and selected tools. Amber identifies mute and active cycle ranges everywhere. Track colors identify musical content. Muting dims a clip without hiding its notes. Standard button interactions provide hover/press feedback and accessibility semantics, including on the custom arrangement canvas.
+
+Toolbars group document, transport and workspace commands. Secondary instrument and effect choices use menus or tabs. At narrower widths the synthesis editor changes from three columns to stacked groups. Default native pointer controls have a 30-point interaction height; compact track mute/solo controls use smaller bounded targets within their lanes. This build does not claim touch-first support or full platform HIG compliance.
+
+Regression checks render all editor tabs at 940, 1440 and 1920 logical pixels. A pointer-event test double-clicks a rendered section button and verifies its stored range and playhead. Native captures use the opt-in `capture` feature; normal builds exclude capture dependencies.

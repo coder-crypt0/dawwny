@@ -48,6 +48,16 @@ pub fn validate(p: &Project) -> Result<()> {
         p.sections.len() <= 128,
         "At most 128 arrangement sections are supported"
     );
+    if let Some(cycle) = p.cycle {
+        ensure!(
+            cycle.start.is_finite()
+                && cycle.end.is_finite()
+                && cycle.start >= 0.0
+                && cycle.end - cycle.start >= 0.25
+                && cycle.end <= p.length_bars as f64 * 4.0,
+            "Cycle range must lie inside the song and last at least a sixteenth note"
+        );
+    }
     for s in &p.sections {
         text(&s.name, "Section name")?;
         ensure!(

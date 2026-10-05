@@ -60,3 +60,17 @@ Build both binaries with `cargo build --release --workspace`. In the studio, use
 ```
 
 The server initializes a demo session if the selected file does not exist. Existing files are never replaced during startup. Invalid CLI options fail rather than silently falling back to another session. Export requests run on a blocking worker outside the protocol loop; the per-process export semaphore allows one job at a time. WAV output is 48 kHz, 24-bit stereo. The full protocol integration test uses the official SDK client, negotiates a session, edits the project, tests stale revision rejection, and verifies MIDI/WAV exports.
+
+## Sections and cycle ranges
+
+Use `set_sections` to replace the arrangement markers and `set_cycle_range` to select a playback range. Bar positions in sections are zero-based; cycle positions are quarter-note beats, with an exclusive end. A null range restores whole-song cycling. The native studio reads these edits without resetting playback. Its local cycle button still controls whether cycling is enabled. WAV/MIDI exports render the complete song once.
+
+```json
+{
+  "expected_revision": 4,
+  "commands": [
+    {"type": "set_sections", "sections": [{"name": "Chorus", "start_bar": 4, "length_bars": 4}]},
+    {"type": "set_cycle_range", "range": {"start": 16.0, "end": 32.0}}
+  ]
+}
+```

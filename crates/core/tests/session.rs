@@ -1,6 +1,92 @@
 use dawwny_core::*;
 
 #[test]
+fn section_and_cycle_commands_are_persistent_atomic_and_backward_compatible() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = SessionStore::new(dir.path().join("song.json"));
+    let original = store.initialize(&demo_project()).unwrap();
+    let mut legacy = serde_json::to_value(&original).unwrap();
+    legacy.as_object_mut().unwrap().remove("cycle");
+    assert_eq!(
+        serde_json::from_value::<Project>(legacy).unwrap().cycle,
+        None
+    );
+    let section = Section {
+        name: "Chorus".into(),
+        start_bar: 4,
+        length_bars: 4,
+    };
+    let range = section.cycle_range();
+    let cycled = store
+        .transact(
+            0,
+            &[
+                Command::SetSections {
+                    sections: vec![section],
+                },
+                Command::SetCycleRange { range: Some(range) },
+            ],
+        )
+        .unwrap();
+    assert_eq!(
+        store.load().unwrap().cycle,
+        Some(CycleRange {
+            start: 16.0,
+            end: 32.0
+        })
+    );
+    assert_eq!(cycled.tracks, original.tracks);
+    for invalid in [
+        CycleRange {
+            start: f64::NAN,
+            end: 4.0,
+        },
+        CycleRange {
+            start: -1.0,
+            end: 4.0,
+        },
+        CycleRange {
+            start: 4.0,
+            end: 4.0,
+        },
+        CycleRange {
+            start: 4.0,
+            end: 4.1,
+        },
+        CycleRange {
+            start: 16.0,
+            end: 65.0,
+        },
+    ] {
+        assert!(
+            store
+                .transact(
+                    1,
+                    &[
+                        Command::RenameProject {
+                            name: "Should not save".into()
+                        },
+                        Command::SetCycleRange {
+                            range: Some(invalid)
+                        },
+                    ]
+                )
+                .is_err()
+        );
+        assert_eq!(store.load().unwrap(), cycled);
+    }
+    assert!(
+        store
+            .transact(1, &[Command::SetLength { length_bars: 2 }])
+            .is_err()
+    );
+    let cleared = store
+        .transact(1, &[Command::SetCycleRange { range: None }])
+        .unwrap();
+    assert_eq!(cleared.cycle, None);
+}
+
+#[test]
 fn demo_is_valid_and_serializable() {
     let p = demo_project();
     validate(&p).unwrap();
