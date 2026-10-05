@@ -38,3 +38,5 @@ Tempo, notes, or instrument/effect changes prepare a replacement graph on the co
 Computer-keyboard, on-screen-keyboard and native MIDI input use a separate live monitor of the selected track. They can sound while the arrangement is paused or stopped. MIDI note-on/off, velocity, sustain and panic are supported. Input recording, pitch bend and expression mappings remain future work.
 
 The native callback consumes bounded queues and does not lock the MIDI producer mutex. Renderer construction, file work and buffer destruction remain on the control thread. Tests exercise callback graph swaps, seeking, mix commands and live input under an allocation/free counter. CPAL stream setup and teardown are outside that measured processing path.
+
+SF2 imports use native RustySynth. Sample data is shared across tracks and prepared graphs; loading and validation occur on control/worker threads. Stereo sample output feeds the same effect rack as Dawn. Bank inspection and preset selection are exposed through MCP with explicit resource bounds. See [sample instruments](sample-instruments.md) for compatibility and memory limits.

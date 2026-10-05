@@ -8,6 +8,25 @@ fn wait() {
 fn main() -> Result<()> {
     let mut project = dawwny_core::demo_project();
     project.master_gain = 0.02;
+    if let Some(file) = std::env::args().nth(1) {
+        let file = std::fs::canonicalize(file)?.to_string_lossy().into_owned();
+        for track in &mut project.tracks {
+            use dawwny_core::Instrument;
+            let (bank, program) = match track.instrument {
+                Instrument::Keys => (0, 0),
+                Instrument::Pad => (0, 48),
+                Instrument::Bass => (0, 32),
+                Instrument::Drums => (128, 0),
+                _ => (0, 24),
+            };
+            track.instrument = Instrument::Sampler;
+            track.patch.sample = Some(dawwny_core::SampleInstrument {
+                file: file.clone(),
+                bank,
+                program,
+            });
+        }
+    }
     let mut engine = AudioEngine::new()?;
     engine.play(&project, true)?;
     wait();

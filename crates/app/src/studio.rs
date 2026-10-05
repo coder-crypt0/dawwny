@@ -25,6 +25,7 @@ pub struct Studio {
     pub looped: bool,
     pub playhead: f64,
     pub keyboard: crate::keyboard::KeyboardState,
+    pub samples: crate::samples::SampleLibrary,
     pub zoom: f32,
     pub fit_timeline: bool,
     pub piano_zoom: f32,
@@ -85,6 +86,7 @@ impl Studio {
             looped: true,
             playhead: 0.0,
             keyboard: crate::keyboard::KeyboardState::default(),
+            samples: crate::samples::SampleLibrary::default(),
             zoom: 1.0,
             fit_timeline: true,
             piano_zoom: 1.0,
@@ -128,10 +130,10 @@ impl Studio {
             self.pending = Some(self.project.clone());
         }
         self.project = draft;
-        self.sync_audio();
         self.last_edit = Instant::now();
         self.status = "Editing • autosave pending".into();
         self.error = false;
+        self.sync_audio();
     }
 
     pub fn commit(&mut self) -> bool {
@@ -568,7 +570,8 @@ impl Studio {
         ctx.request_repaint_after(
             if self.playing() || self.audio.as_ref().is_some_and(|a| a.is_monitoring()) {
                 Duration::from_millis(33)
-            } else if self.pending.is_some() || self.export_job.is_some() {
+            } else if self.pending.is_some() || self.export_job.is_some() || self.samples.loading()
+            {
                 Duration::from_millis(100)
             } else {
                 Duration::from_millis(750)
@@ -580,6 +583,7 @@ impl Studio {
 impl eframe::App for Studio {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.housekeeping(ctx);
+        self.sample_housekeeping();
         self.keyboard_input(ctx);
         #[cfg(feature = "capture")]
         if let Ok(path) = std::env::var("DAWWNY_SCREENSHOT_PATH") {
@@ -664,6 +668,7 @@ impl eframe::App for Studio {
             self.arrangement(ctx);
         }
         self.keyboard_window(ctx);
+        self.sample_window(ctx);
         if self.show_help {
             egui::Window::new("Studio guide").open(&mut self.show_help).resizable(false).show(ctx,|ui|{
                 ui.label("Space — play / stop     Ctrl+S — save     Ctrl+Z / Ctrl+Y — undo / redo");

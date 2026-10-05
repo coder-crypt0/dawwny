@@ -31,7 +31,7 @@ async fn mcp_client_edits_the_native_session_and_exports_real_music() -> anyhow:
     });
     let mut client = ().serve(client_io).await?;
     let tools = client.list_all_tools().await?;
-    assert_eq!(tools.len(), 6);
+    assert_eq!(tools.len(), 7);
     let catalog = client
         .call_tool(CallToolRequestParams::new("list_sounds"))
         .await?;
@@ -87,6 +87,55 @@ async fn mcp_client_edits_the_native_session_and_exports_real_music() -> anyhow:
         )
         .await?;
     assert_ne!(wav.is_error, Some(true));
+    assert!(output(&wav)["peak"].as_f64().unwrap() > 0.01);
+    client.close().await?;
+    server.await??;
+    Ok(())
+}
+
+#[path = "../../audio/tests/support/mod.rs"]
+mod support;
+#[tokio::test]
+async fn agents_discover_and_select_samples_atomically() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let sf2 = dir.path().join("test.sf2");
+    support::bank(&sf2);
+    let project = support::project(&sf2);
+    let path = dir.path().join("session.json");
+    let store = dawwny_core::SessionStore::new(path.clone());
+    store.initialize(&project)?;
+    let (server_io, client_io) = tokio::io::duplex(65536);
+    let server = tokio::spawn(async move {
+        let s = dawwny_mcp::build_server(path, dir.path().join("exports"))
+            .serve(server_io)
+            .await?;
+        s.waiting().await?;
+        anyhow::Ok(())
+    });
+    let mut client = ().serve(client_io).await?;
+    let catalog = client
+        .call_tool(
+            CallToolRequestParams::new("list_sample_presets").with_arguments(
+                json!({"file":sf2,"query":"bright"})
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+            ),
+        )
+        .await?;
+    assert_eq!(output(&catalog)["total"], 1);
+    assert_eq!(output(&catalog)["presets"][0]["program"], 24);
+    for (program, valid) in [(127, false), (24, true)] {
+        let result=client.call_tool(CallToolRequestParams::new("apply_commands").with_arguments(json!({"expected_revision":0,"commands":[{"type":"set_sample_instrument","track_id":project.tracks[0].id,"sample":{"file":sf2,"bank":0,"program":program}}]}).as_object().unwrap().clone())).await?;
+        assert_eq!(result.is_error == Some(true), !valid);
+        assert_eq!(store.load()?.revision, if valid { 1 } else { 0 });
+    }
+    let wav = client
+        .call_tool(
+            CallToolRequestParams::new("render_wav")
+                .with_arguments(json!({"expected_revision":1}).as_object().unwrap().clone()),
+        )
+        .await?;
     assert!(output(&wav)["peak"].as_f64().unwrap() > 0.01);
     client.close().await?;
     server.await??;

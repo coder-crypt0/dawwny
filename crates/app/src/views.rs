@@ -1014,7 +1014,9 @@ impl Studio {
         egui::ScrollArea::vertical()
             .id_salt(("sound", &track.id))
             .show(ui, |ui| {
-                crate::sound_editor::show(ui, &mut track);
+                if crate::sound_editor::show(ui, &mut track, self.samples.bank.as_deref()) {
+                    self.samples.open = true;
+                }
             });
         if track != before {
             self.edit(|p| p.tracks[ti] = track);

@@ -18,3 +18,6 @@ MOONLIGHT.md
 .dawwny-library.json
 *.dawwny.json.lock
 __pycache__/
+
+# Optional user sample libraries
+/sample-banks/

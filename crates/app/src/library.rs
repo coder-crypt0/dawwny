@@ -202,6 +202,7 @@ impl Studio {
             .show(ctx,|ui| {
                 ui.horizontal(|ui|{ui.heading("Sound library");ui.with_layout(egui::Layout::right_to_left(egui::Align::Center),|ui|{if ui.button("×").on_hover_text("Hide library · L").clicked(){self.show_library=false;}});});
                 ui.label(egui::RichText::new("2,310 sounds · Dawn collection").small().weak());
+                if ui.button("Sample instruments…").on_hover_text("Import real sample banks for piano, strings, guitars and drums").clicked(){self.samples.open=true;}
                 let mut changed=ui.add(egui::TextEdit::singleline(&mut self.library.query).hint_text("Search sounds, textures…").desired_width(f32::INFINITY)).changed();
                 ui.horizontal(|ui| {
                     egui::ComboBox::from_id_salt("category").width(143.0).selected_text(if self.library.category.is_empty(){"All instruments"}else{&self.library.category}).show_ui(ui,|ui| {

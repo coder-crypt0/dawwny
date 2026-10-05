@@ -174,3 +174,46 @@ fn simultaneous_session_writers_do_not_overwrite() {
     assert_eq!(successes, 1);
     assert_eq!(s.load().unwrap().revision, 1);
 }
+
+#[test]
+fn sample_selection_preserves_notes_effects_and_exports_bank_and_program() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut p = demo_project();
+    p.tracks.truncate(1);
+    let notes = p.tracks[0].clips.clone();
+    let patch = p.tracks[0].patch.clone();
+    let sample = SampleInstrument {
+        file: dir.path().join("bank.sf2").to_string_lossy().into_owned(),
+        bank: 8,
+        program: 24,
+    };
+    let draft = apply_commands(
+        &p,
+        &[Command::SetSampleInstrument {
+            track_id: p.tracks[0].id.clone(),
+            sample: sample.clone(),
+        }],
+    )
+    .unwrap();
+    assert_eq!(draft.tracks[0].clips, notes);
+    assert_eq!(draft.tracks[0].patch.effects, patch.effects);
+    assert_eq!(draft.tracks[0].instrument, Instrument::Sampler);
+    let midi = dir.path().join("sample.mid");
+    export_midi(&draft, &midi).unwrap();
+    let bytes = std::fs::read(midi).unwrap();
+    let smf = midly::Smf::parse(&bytes).unwrap();
+    assert!(smf.tracks[1].iter().any(|e|matches!(e.kind,midly::TrackEventKind::Midi {message:midly::MidiMessage::ProgramChange {program},..} if program.as_int()==24)));
+    assert!(smf.tracks[1].iter().any(|e|matches!(e.kind,midly::TrackEventKind::Midi {message:midly::MidiMessage::Controller {controller,value},..} if controller.as_int()==0 && value.as_int()==8)));
+    let mut bad = sample;
+    bad.file = "relative.sf2".into();
+    assert!(
+        apply_commands(
+            &p,
+            &[Command::SetSampleInstrument {
+                track_id: p.tracks[0].id.clone(),
+                sample: bad
+            }]
+        )
+        .is_err()
+    );
+}

@@ -1,4 +1,4 @@
-//! Local MCP access to one explicitly configured session; no arbitrary file tools.
+//! Local MCP access to one configured session and bounded SF2 preset inspection.
 use dawwny_core::{Command, SessionStore};
 use rmcp::{handler::server::wrapper::Parameters, schemars::JsonSchema, tool, tool_router};
 use serde::Deserialize;
@@ -11,6 +11,16 @@ pub struct ListSoundsArgs {
     pub query: Option<String>,
     pub category: Option<String>,
     /// Zero-based pagination offset.
+    pub offset: Option<usize>,
+    /// Page size, 1–100. Defaults to 24.
+    pub limit: Option<usize>,
+}
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ListSamplePresetsArgs {
+    /// Absolute local .sf2 path. Loads at most 256 MiB; returns metadata only.
+    pub file: String,
+    pub query: Option<String>,
     pub offset: Option<usize>,
     /// Page size, 1–100. Defaults to 24.
     pub limit: Option<usize>,
@@ -117,6 +127,32 @@ impl DawwnyMcp {
         serde_json::to_string(&serde_json::json!({"sounds":sounds,"total":total,"offset":offset,"next_offset":if next<total{Some(next)}else{None},"categories":dawwny_core::SOUND_CATEGORIES})).map_err(|e|e.to_string())
     }
     #[tool(
+        description = "Inspect actual preset names, bank and zero-based program numbers in an explicitly provided local SF2 SoundFont. Supports piano, strings, guitars, percussion and any other mapped instruments in the file. No downloading or arbitrary file contents. Use set_sample_instrument with the returned canonical file, bank and program to use a preset; track notes, mix and effects are preserved. Quality and articulations depend on the supplied bank."
+    )]
+    async fn list_sample_presets(
+        &self,
+        Parameters(args): Parameters<ListSamplePresetsArgs>,
+    ) -> Result<String, String> {
+        let query = args.query.unwrap_or_default();
+        let limit = args.limit.unwrap_or(24);
+        if args.file.len() > 4096
+            || args.file.chars().any(char::is_control)
+            || query.len() > 128
+            || !(1..=100).contains(&limit)
+        {
+            return Err("Invalid SF2 path/search or limit (1–100)".into());
+        }
+        tokio::task::spawn_blocking(move || {
+            let bank = dawwny_audio::load_sample_bank(std::path::Path::new(&args.file)).map_err(|e|format!("{e:#}"))?;
+            let query = query.to_lowercase();
+            let matches:Vec<_> = bank.presets.iter().filter(|p|query.split_whitespace().all(|term|p.name.to_lowercase().contains(term))).collect();
+            let total = matches.len(); let offset = args.offset.unwrap_or(0);
+            let presets:Vec<_> = matches.into_iter().skip(offset).take(limit).map(|p|serde_json::json!({"name":p.name,"bank":p.bank,"program":p.program,"percussion":p.bank==128})).collect();
+            let next = offset.saturating_add(presets.len());
+            Ok(serde_json::json!({"file":bank.file,"name":bank.name,"storage_bytes":bank.storage_bytes,"presets":presets,"total":total,"next_offset":if next<total{Some(next)}else{None},"engine":"native SF2 samples","custom_modulators_supported":false}).to_string())
+        }).await.map_err(|e|e.to_string())?
+    }
+    #[tool(
         description = "Get one Dawn preset's complete editable SynthPatch by its stable preset_id from list_sounds. Copy and modify these settings through update_track with instrument synth. Effects work on all instruments. Loading a preset preserves track notes and mix. Presets are synthesized; no sample libraries are downloaded."
     )]
     async fn get_sound(
@@ -142,7 +178,7 @@ impl DawwnyMcp {
         .map_err(|e| e.to_string())?
     }
     #[tool(
-        description = "Apply 1–256 validated musical commands atomically to the configured local project. Requires the current expected_revision. IDs must be unique. Fixed 4/4, 30–300 BPM, 32 tracks, 128 clips, 32768 notes. Use list_sounds to discover presets. Custom oscillator/filter/LFO settings apply to instrument synth; ordered effects apply to every instrument. update_track replaces the entire patch, so preserve settings you want to keep. After a revision conflict read_project again; never blindly retry old changes."
+        description = "Apply 1–256 validated musical commands atomically to the configured local project. Requires the current expected_revision. IDs must be unique. Fixed 4/4, 30–300 BPM, 32 tracks, 128 clips, 32768 notes. Use list_sounds to discover presets. Custom oscillator/filter/LFO settings apply to instrument synth; ordered effects apply to every instrument. Use list_sample_presets then set_sample_instrument to load local SF2 samples; missing banks and unknown programs are rejected before saving. update_track replaces the entire patch, so preserve settings you want to keep. After a revision conflict read_project again; never blindly retry old changes."
     )]
     async fn apply_commands(
         &self,
@@ -150,6 +186,43 @@ impl DawwnyMcp {
     ) -> Result<String, String> {
         let store = self.store.clone();
         tokio::task::spawn_blocking(move || {
+            let current = store.load().map_err(|e| e.to_string())?;
+            if current.revision != args.expected_revision {
+                return Err(format!(
+                    "Revision conflict: expected {}, current {}",
+                    args.expected_revision, current.revision
+                ));
+            }
+            let draft =
+                dawwny_core::apply_commands(&current, &args.commands).map_err(|e| e.to_string())?;
+            let mut banks = Vec::new();
+            for track in draft
+                .tracks
+                .iter()
+                .filter(|t| t.instrument == dawwny_core::Instrument::Sampler)
+            {
+                if current.tracks.iter().any(|old| {
+                    old.id == track.id
+                        && old.instrument == track.instrument
+                        && old.patch.sample == track.patch.sample
+                }) {
+                    continue;
+                }
+                let sample = track.patch.sample.as_ref().unwrap();
+                let bank = dawwny_audio::load_sample_bank(std::path::Path::new(&sample.file))
+                    .map_err(|e| format!("{e:#}"))?;
+                if !bank
+                    .presets
+                    .iter()
+                    .any(|p| p.bank == sample.bank && p.program == sample.program)
+                {
+                    return Err(format!(
+                        "Unknown SF2 preset: bank {}, program {}",
+                        sample.bank, sample.program
+                    ));
+                }
+                banks.push(bank);
+            }
             store
                 .transact(args.expected_revision, &args.commands)
                 .map_err(|e| e.to_string())
@@ -168,7 +241,7 @@ impl DawwnyMcp {
         self.export(args.expected_revision, false).await
     }
     #[tool(
-        description = "Render the audible mix through the native synth engine to a unique 24-bit stereo WAV at 48 kHz. Applies custom synthesis, mute/solo, gain/pan and the ordered stock effect rack. Rack tails are capped at 30 seconds. Streams to disk; one export at a time. Requires current revision. Native VST binaries are not yet hosted."
+        description = "Render the audible mix through the native synth and SF2 sample engines to a unique 24-bit stereo WAV at 48 kHz. Applies custom synthesis, mute/solo, gain/pan and the ordered stock effect rack. Rack tails are capped at 30 seconds. Streams to disk; one export at a time. Requires current revision. Native VST binaries are not yet hosted."
     )]
     async fn render_wav(&self, Parameters(args): Parameters<ExportArgs>) -> Result<String, String> {
         self.export(args.expected_revision, true).await
