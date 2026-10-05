@@ -37,6 +37,13 @@ def third_party_notices(root: Path) -> dict[str, bytes]:
                 continue
             relative = path.relative_to(directory).as_posix()
             entries[f"licenses/{name}/{relative}"] = path.read_bytes()
+        # Some published crates omit license files that remain in their upstream repository.
+        supplemental = root / "third-party" / name
+        if supplemental.is_dir():
+            for path in sorted(supplemental.rglob("*")):
+                if path.is_file():
+                    relative = path.relative_to(supplemental).as_posix()
+                    entries[f"licenses/{name}/{relative}"] = path.read_bytes()
     entries["THIRD-PARTY-NOTICES.txt"] = ("\n".join(lines) + "\n").encode("utf-8")
     return entries
 
