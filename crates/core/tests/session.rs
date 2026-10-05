@@ -1,6 +1,58 @@
 use dawwny_core::*;
 
 #[test]
+fn clip_transforms_preserve_note_identity_gate_velocity_and_atomicity() {
+    let mut project = demo_project();
+    project.tracks.truncate(1);
+    project.tracks[0].clips.truncate(1);
+    let clip = &mut project.tracks[0].clips[0];
+    clip.length = 4.0;
+    clip.notes.truncate(2);
+    clip.notes[0].start = 0.26;
+    clip.notes[0].duration = 0.5;
+    clip.notes[1].start = 3.9;
+    clip.notes[1].duration = 0.1;
+    let before = clip.clone();
+    let command = Command::QuantizeClip {
+        track_id: project.tracks[0].id.clone(),
+        clip_id: before.id.clone(),
+        grid: 0.25,
+    };
+    let quantized = apply_commands(&project, &[command]).unwrap();
+    let notes = &quantized.tracks[0].clips[0].notes;
+    assert_eq!(notes[0].start, 0.25);
+    assert_eq!(notes[1].start, 3.75);
+    for (note, old) in notes.iter().zip(&before.notes) {
+        assert_eq!(
+            (note.id.as_str(), note.duration, note.velocity, note.pitch),
+            (old.id.as_str(), old.duration, old.velocity, old.pitch)
+        );
+    }
+    let transpose = Command::TransposeClip {
+        track_id: project.tracks[0].id.clone(),
+        clip_id: before.id.clone(),
+        semitones: 12,
+    };
+    let moved = apply_commands(&quantized, std::slice::from_ref(&transpose)).unwrap();
+    assert_eq!(
+        moved.tracks[0].clips[0].notes[0].pitch,
+        before.notes[0].pitch + 12
+    );
+    project.tracks[0].clips[0].notes[1].pitch = 127;
+    assert!(apply_commands(&project, &[transpose]).is_err());
+    assert_eq!(
+        project.tracks[0].clips[0].notes[0].pitch,
+        before.notes[0].pitch
+    );
+    let invalid = Command::QuantizeClip {
+        track_id: project.tracks[0].id.clone(),
+        clip_id: before.id,
+        grid: f64::NAN,
+    };
+    assert!(apply_commands(&project, &[invalid]).is_err());
+}
+
+#[test]
 fn section_and_cycle_commands_are_persistent_atomic_and_backward_compatible() {
     let dir = tempfile::tempdir().unwrap();
     let store = SessionStore::new(dir.path().join("song.json"));

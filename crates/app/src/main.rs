@@ -1,6 +1,7 @@
 mod design;
 mod keyboard;
 mod library;
+mod recording;
 mod samples;
 mod sections;
 mod sound_editor;

@@ -53,7 +53,7 @@ async fn mcp_client_edits_the_native_session_and_exports_real_music() -> anyhow:
         .await?;
     assert_eq!(output(&read)["revision"], 0);
     let apply = CallToolRequestParams::new("apply_commands").with_arguments(
-        json!({"expected_revision":0,"commands":[{"type":"set_sections","sections":[{"name":"Verse","start_bar":0,"length_bars":1}]},{"type":"set_cycle_range","range":{"start":0.0,"end":2.0}},{"type":"set_tempo","tempo":110.0},{"type":"apply_sound_preset","track_id":project.tracks[0].id,"preset_id":"factory.soft-sub.00"}]})
+        json!({"expected_revision":0,"commands":[{"type":"quantize_clip","track_id":project.tracks[0].id,"clip_id":project.tracks[0].clips[0].id,"grid":0.25},{"type":"transpose_clip","track_id":project.tracks[0].id,"clip_id":project.tracks[0].clips[0].id,"semitones":1},{"type":"set_sections","sections":[{"name":"Verse","start_bar":0,"length_bars":1}]},{"type":"set_cycle_range","range":{"start":0.0,"end":2.0}},{"type":"set_tempo","tempo":110.0},{"type":"apply_sound_preset","track_id":project.tracks[0].id,"preset_id":"factory.soft-sub.00"}]})
             .as_object()
             .unwrap()
             .clone(),
@@ -62,6 +62,10 @@ async fn mcp_client_edits_the_native_session_and_exports_real_music() -> anyhow:
     assert_ne!(result.is_error, Some(true));
     assert_eq!(output(&result)["revision"], 1);
     assert_eq!(store.load()?.tempo, 110.0);
+    assert_eq!(
+        store.load()?.tracks[0].clips[0].notes[0].pitch,
+        project.tracks[0].clips[0].notes[0].pitch + 1
+    );
     assert_eq!(
         store.load()?.cycle,
         Some(dawwny_core::CycleRange {

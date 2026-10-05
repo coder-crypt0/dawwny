@@ -21,3 +21,6 @@ __pycache__/
 
 # Optional user sample libraries
 /sample-banks/
+
+# Local recovery copies of recorded performances
+.dawwny-takes/

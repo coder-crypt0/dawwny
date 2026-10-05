@@ -103,6 +103,31 @@ fn main() -> Result<()> {
         (8.0..=8.5).contains(&engine.position_beats()),
         "Re-enabling cycle lost the range"
     );
+    engine.set_looped(false);
+    engine.start_recording()?;
+    engine.live_event(LiveEvent::NoteOn {
+        channel: 16,
+        pitch: 64,
+        velocity: 0.6,
+    })?;
+    wait();
+    engine.live_event(LiveEvent::NoteOff {
+        channel: 16,
+        pitch: 64,
+    })?;
+    wait();
+    let recording_end = engine.finish_recording()?;
+    let mut captured = Vec::new();
+    while let Some(event) = engine.recorded_event() {
+        captured.push(event);
+    }
+    ensure!(
+        captured.len() == 2
+            && captured[1].beat > captured[0].beat
+            && captured[1].beat <= recording_end,
+        "Recording events did not follow the device clock"
+    );
+    ensure!(!engine.recording_overflowed(), "Recording input overflowed");
     engine.pause();
     wait();
     let before = engine.position_beats();
@@ -132,7 +157,7 @@ fn main() -> Result<()> {
     );
     engine.collect_retired();
     println!(
-        "PASS: real device clock, pause/resume, seeking, mute/solo/pan, tempo replacement, section cycle, live input and stop; {} Hz; MIDI inputs: {}",
+        "PASS: real device clock, pause/resume, seeking, mute/solo/pan, tempo replacement, section cycle, timestamped recording, live input and stop; {} Hz; MIDI inputs: {}",
         engine.sample_rate(),
         AudioEngine::midi_ports()?.len()
     );

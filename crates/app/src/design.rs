@@ -11,6 +11,7 @@ pub const TEXT: Color32 = Color32::from_rgb(226, 230, 232);
 pub const MUTED: Color32 = Color32::from_rgb(140, 148, 159);
 pub const ACCENT: Color32 = Color32::from_rgb(203, 231, 143);
 pub const CYCLE: Color32 = Color32::from_rgb(230, 184, 99);
+pub const RECORD: Color32 = Color32::from_rgb(235, 106, 116);
 pub const ERROR: Color32 = Color32::from_rgb(255, 169, 144);
 
 // Roles stay consistent across the studio; compact musical marks need less rounding.

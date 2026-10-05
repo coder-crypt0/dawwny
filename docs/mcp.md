@@ -74,3 +74,7 @@ Use `set_sections` to replace the arrangement markers and `set_cycle_range` to s
   ]
 }
 ```
+
+## Edit recorded performances
+
+Recorded takes become ordinary MIDI clips, visible through `read_project`. `quantize_clip` accepts `track_id`, `clip_id`, and a `grid` of 0.0625–4 quarter-note beats. It aligns note starts without changing duration, velocity or identity; notes near the end move to the latest fitting grid line. `transpose_clip` takes the same IDs and `semitones` from -24 to 24. Any out-of-range note rejects the whole transaction. Both commands preserve the revision/atomicity guarantees of `apply_commands`.
