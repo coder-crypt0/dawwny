@@ -27,6 +27,10 @@ The included **Velvet Dawn** session is an original 16-bar arrangement with six 
 
 Windows x64 is the currently verified platform. The native dependencies also target Linux/macOS, but those builds have not been validated yet.
 
+**[Download dawwny.exe for Windows](https://github.com/coder-crypt0/dawwny/releases/download/v0.1.0/dawwny.exe)** and double-click it. The portable release is one executable with the studio, stock instruments, effects and MCP connector included. No installer or companion server is needed. Sessions and preferences save under `%LOCALAPPDATA%/dawwny`; moving the EXE does not move or delete your work. Third-party notices are embedded and available from the session menu → **About dawwny & licenses**.
+
+### Build from source
+
 Install Rust 1.88 or newer and your platform's native build tools. Windows requires Visual Studio C++ Build Tools and the Windows SDK.
 
 ```sh
@@ -39,11 +43,11 @@ For optimized binaries, including the MCP connector:
 cargo build --release --workspace --locked
 ```
 
-Open `target/release/dawwny.exe` on Windows. Both the UI and MCP default to `sessions/untitled.dawwny.json` relative to their working directory. Select an explicit shared file when using agents:
+Open `target/release/dawwny.exe` on Windows. UI and MCP defaults use the same user data directory, independently of the working directory. Select an explicit shared file when using agents:
 
 ```sh
 dawwny --project /path/to/session.dawwny.json
-dawwny-mcp --project /path/to/session.dawwny.json --export-dir /path/to/exports
+dawwny --mcp --project /path/to/session.dawwny.json --export-dir /path/to/exports
 ```
 
 Use **Agent connection → Copy MCP configuration** to get the correct executable and session paths for your client. The model runs in your chosen client; dawwny supplies musical tools. [MCP setup](docs/mcp.md).
@@ -58,7 +62,7 @@ Edits save locally after a short debounce. Space pauses/resumes at the current p
 
 ## Built to stay small
 
-The UI draws natively through egui/Glow. CPAL owns audio output. The engine compiles notes into event metadata and streams samples through a fixed 128-voice pool, with bounded delay/reverb buffers. Optional SF2 instruments use shared sample banks and bounded layer voices. The UI repaints on interaction, at about 30 Hz during playback, and polls for agent edits when idle. The separate MCP executable only runs when a client starts it.
+The UI draws natively through egui/Glow. CPAL owns audio output. The engine compiles notes into event metadata and streams samples through a fixed 128-voice pool, with bounded delay/reverb buffers. Optional SF2 instruments use shared sample banks and bounded layer voices. The UI repaints on interaction, at about 30 Hz during playback, and polls for agent edits when idle. A client starts the same EXE with `--mcp` for agent access; the studio does not start a server in the background.
 
 Release binaries are single-digit MiB. A dedicated test counts allocations and frees inside the sample loop and requires zero. Exact measured baselines and their limits are documented as part of each release; development caches are separate from the distributed app.
 
@@ -83,9 +87,9 @@ cargo run --release -p dawwny-audio --example render -- exports/velvet-dawn.wav
 
 Tests cover validation, atomic edits, concurrent writers, MIDI round trips, audible DSP controls, bounded rendering memory, callback allocations, WAV data, GUI state/undo/conflicts, and a real MCP client/server exchange.
 
-For a separate process check after building, run `python scripts/smoke-mcp.py`. Native UI captures use the optional `capture` feature and `DAWWNY_SCREENSHOT_PATH`; that feature is excluded from normal builds. The screenshots show the real application with a local Dawn showcase session. Use `--view sound --expanded` to open the full sound designer.
+For a separate process check after building, run `python scripts/smoke-mcp.py --binary target/release/dawwny.exe --mode studio`. Native UI captures use the optional `capture` feature and `DAWWNY_SCREENSHOT_PATH`; that feature is excluded from normal builds. The screenshots show the real application with a local Dawn showcase session. Use `--view sound --expanded` to open the full sound designer.
 
-After building both release executables, `python scripts/package-windows.py` creates a portable Windows ZIP under `artifacts/`, with documentation, demo projects, third-party notices and a SHA-256 sidecar. This is local packaging; it does not publish a GitHub release or install anything.
+After building, `python scripts/package-windows.py` stages **only** `artifacts/windows-x64/dawwny.exe` and prints its SHA-256. It checks the GUI subsystem, Windows DLL imports and embedded licenses. `python scripts/smoke-standalone.py` opens a copied EXE from a temporary folder containing no companion files, verifies user-data storage and clean shutdown, and exercises its MCP mode. [Release process](docs/releases.md).
 
 No hosting is configured. Future remote control will use Hostinger when that part of the project is implemented. Native VST3 support will require a separate crash-isolated plugin host; this build does not scan or load installed plugin binaries.
 

@@ -1,17 +1,17 @@
 # Dawwny MCP connector
 
-`dawwny-mcp` is a local Model Context Protocol server for agent control of a
+`dawwny.exe --mcp` is a local Model Context Protocol server for agent control of a
 Dawwny session. It communicates over stdio, so an MCP host launches the native
 binary and exchanges JSON-RPC messages through its standard input and output.
 
 ## Launch
 
 ```text
-dawwny-mcp --project sessions/untitled.dawwny.json --export-dir exports
+dawwny.exe --mcp --project C:/music/session.dawwny.json --export-dir C:/music/exports
 ```
 
-Both arguments are optional. The project defaults to
-`sessions/untitled.dawwny.json`; exports default to `exports`. Paths are
+Both path arguments are optional. On Windows the project defaults to
+`%LOCALAPPDATA%/dawwny/sessions/untitled.dawwny.json`; exports default to `%LOCALAPPDATA%/dawwny/exports`. Paths are
 selected when the process starts. SF2 inspection accepts an explicitly provided absolute `.sf2` path with bounded loading. Export paths remain fixed at startup.
 
 ## Tools
@@ -46,20 +46,22 @@ then rebase intended commands onto the latest project.
 
 ## Client configuration
 
-Build both binaries with `cargo build --release --workspace`. In the studio, use **Agent connection → Copy MCP configuration** to get the exact local paths. A generic MCP host configuration is:
+Download the single Windows EXE or build with `cargo build --release -p dawwny-app --locked`. In the studio, use **Agent connection → Copy MCP configuration** to get the exact executable, session and export paths. A generic MCP host configuration is:
 
 ```json
 {
   "mcpServers": {
     "dawwny": {
-      "command": "C:/path/to/dawwny-mcp.exe",
-      "args": ["--project", "C:/music/session.dawwny.json", "--export-dir", "C:/music/exports"]
+      "command": "C:/path/to/dawwny.exe",
+      "args": ["--mcp", "--project", "C:/music/session.dawwny.json", "--export-dir", "C:/music/exports"]
     }
   }
 }
 ```
 
-The server initializes a demo session if the selected file does not exist. Existing files are never replaced during startup. Invalid CLI options fail rather than silently falling back to another session. Export requests run on a blocking worker outside the protocol loop; the per-process export semaphore allows one job at a time. WAV output is 48 kHz, 24-bit stereo. The full protocol integration test uses the official SDK client, negotiates a session, edits the project, tests stale revision rejection, and verifies MIDI/WAV exports.
+The server initializes a demo session if the selected file does not exist. Existing files are never replaced during startup. Invalid CLI options fail rather than silently falling back to another session. MCP mode opens no studio window or audio device, and errors go to stderr with a failing exit code. Export requests run on a blocking worker outside the protocol loop; the per-process export semaphore allows one job at a time. WAV output is 48 kHz, 24-bit stereo. The full protocol integration test uses the official SDK client, negotiates a session, edits the project, tests stale revision rejection, and verifies MIDI/WAV exports.
+
+The separate `dawwny-mcp` developer binary remains available for existing integrations and uses the same server implementation. It is not needed or included in the portable release. Linux/macOS data defaults follow the user's application data directory; these platform builds remain unverified.
 
 ## Sections and cycle ranges
 

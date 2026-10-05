@@ -250,3 +250,20 @@ impl DawwnyMcp {
 pub fn build_server(project: PathBuf, export_dir: PathBuf) -> DawwnyMcp {
     DawwnyMcp::new(project, export_dir)
 }
+
+/// Shared entry point for the studio's --mcp mode and the developer server binary.
+pub fn serve_stdio(project: PathBuf, export_dir: PathBuf) -> anyhow::Result<()> {
+    use rmcp::{ServiceExt, transport::stdio};
+    SessionStore::new(project.clone()).initialize(&dawwny_core::demo_project())?;
+    tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()?
+        .block_on(async {
+            build_server(project, export_dir)
+                .serve(stdio())
+                .await?
+                .waiting()
+                .await?;
+            Ok(())
+        })
+}

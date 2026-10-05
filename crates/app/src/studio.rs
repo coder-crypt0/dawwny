@@ -42,6 +42,7 @@ pub struct Studio {
     pub library: crate::library::LibraryState,
     pub preview: Option<AudioEngine>,
     pub show_help: bool,
+    pub show_about: bool,
     pub pending: Option<Project>,
     pub conflict: bool,
     pub undo: Vec<Project>,
@@ -106,6 +107,7 @@ impl Studio {
             library,
             preview: None,
             show_help: false,
+            show_about: false,
             pending: None,
             conflict: false,
             undo: Vec::new(),
@@ -749,6 +751,7 @@ impl eframe::App for Studio {
         self.keyboard_window(ctx);
         self.sample_window(ctx);
         self.sections_window(ctx);
+        self.about_window(ctx);
         if self.show_help {
             egui::Window::new("Studio guide").open(&mut self.show_help).resizable(false).show(ctx,|ui|{
                 ui.label("Space — play / pause     Ctrl+S — save     Ctrl+Z / Ctrl+Y — undo / redo");

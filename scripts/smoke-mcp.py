@@ -11,14 +11,16 @@ import threading
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--binary", type=Path, default=Path("target/release/dawwny-mcp.exe"))
+    parser.add_argument("--mode", choices=("server", "studio"), default="server")
     args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix="dawwny-smoke-") as root:
         root = Path(root)
         proc = subprocess.Popen(
-            [str(args.binary.resolve()), "--project", str(root / "session.json"),
+            [str(args.binary.resolve()), *(["--mcp"] if args.mode == "studio" else []), "--project", str(root / "session.json"),
              "--export-dir", str(root / "exports")],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             text=True, encoding="utf-8",
+            cwd=root,
         )
         lines = queue.Queue()
 
