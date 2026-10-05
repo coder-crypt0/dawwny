@@ -14,6 +14,8 @@ The canonical project is a versioned, validated document shared by human editing
 - `mcp` exposes schema-checked musical operations. Users bring their preferred MCP client/AI; no API key or AI subscription is built into the app.
 - Native third-party plugins belong in a future crash-isolated host process. The browser cannot directly load installed native plugin binaries. Plugin binary upload is not part of the design.
 
+The Windows release is a single native EXE. It links the MCP library and switches to stdio server mode only with `--mcp`; normal launch opens the studio. Both entry points share session defaults in the user's application data directory. Windows builds link the C runtime statically, use the GUI subsystem, and embed a compressed license archive. No helper EXE is extracted or launched, and no runtime files are unpacked beside the app.
+
 ## Performance principles
 
 Bound voice counts and document sizes; compile musical events off the audio thread; avoid locks, allocation, disk, network, and logging inside the callback. Stop needless visual work when idle. Share one DSP implementation between live and offline playback. Measure release executable size, process working set/private memory, render throughput, and callback underruns before claiming an optimization.
