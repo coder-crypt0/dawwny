@@ -54,3 +54,8 @@ Example agent request: “Read this session, add a soft bass line following the 
 This is a MIDI composition prototype, not a full Logic Pro replacement. Native plugin hosting, sample/audio tracks, audio recording and controller mapping, automation lanes, tempo maps, plugin delay compensation, per-note expression, stems, and remote collaboration are future milestones. It has no network listener and no site deployment. Hostinger will be considered when remote access is implemented.
 
 **Sample instruments:** in Sounds, open Sample instruments, import a local SF2, search its actual names and use a preset. Ctrl+K auditions it. [Installation and agent workflow](sample-instruments.md).
+## Metronome
+
+In current source builds, **Click** in the transport or **Ctrl+Shift+M** toggles a native metronome. Right-click Click to set its level. Beat one is accented in 4/4. The cue follows the audio clock through tempo changes, seeking and section cycling, and stays silent while paused or after the arrangement ends. It follows master level and remains audible when tracks are muted or soloed.
+
+Click settings save with the session and participate in undo/redo. Agents can use `set_metronome` through MCP. The cue is excluded from MIDI and WAV exports and from sound-library previews. This feature is newer than the v0.1.0 downloadable EXE and requires a source build until the next release.

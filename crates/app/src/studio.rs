@@ -251,6 +251,9 @@ impl Studio {
             self.fail(format!("Audio update failed: {e}"));
         }
     }
+    pub fn toggle_metronome(&mut self) {
+        self.edit(|project| project.metronome.enabled = !project.metronome.enabled);
+    }
     pub fn seek(&mut self, beat: f64) {
         self.finish_recording();
         if !beat.is_finite() {
@@ -718,6 +721,11 @@ impl eframe::App for Studio {
         if ctx.input_mut(|i| i.consume_key(egui::Modifiers::CTRL, egui::Key::S)) {
             self.commit();
         }
+        if ctx.input_mut(|i| {
+            i.consume_key(egui::Modifiers::CTRL | egui::Modifiers::SHIFT, egui::Key::M)
+        }) {
+            self.toggle_metronome();
+        }
         if !ctx.wants_keyboard_input()
             && ctx.input_mut(|i| i.consume_key(egui::Modifiers::CTRL, egui::Key::Z))
         {
@@ -763,6 +771,7 @@ impl eframe::App for Studio {
                 ui.label("Double-click a section above the ruler to select and cycle it. C enables or disables cycle.");
                 ui.label("Use Sections to edit arrangement markers. Samples imports local SF2 instruments.");
                 ui.label("R records Keys or MIDI to a new clip. Piano roll → Notes quantizes and transposes performances.");
+                ui.label("Click / Ctrl+Shift+M toggles the metronome. Right-click Click to set its level. The cue is not exported.");
                 ui.label("Audio recording, automation and VST3 hosting are planned.");
             });
         }

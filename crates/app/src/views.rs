@@ -227,6 +227,22 @@ impl Studio {
                                 if ui.add(cycle_button).on_hover_text(cycle_tip).clicked() {
                                     self.toggle_cycle();
                                 }
+                                let mut click = self.project.metronome;
+                                let response = ui.add(egui::Button::new(
+                                    egui::RichText::new("Click").size(12.0).color(if click.enabled { BG } else { MUTED })
+                                ).fill(if click.enabled { ACCENT } else { CONTROL })
+                                    .corner_radius(CONTROL_RADIUS).min_size(Vec2::new(48.0, 34.0)))
+                                    .on_hover_text("Metronome · Ctrl+Shift+M · Right-click for level");
+                                if response.clicked() { click.enabled = !click.enabled; }
+                                response.context_menu(|ui| {
+                                    ui.label(egui::RichText::new("Metronome").strong());
+                                    ui.checkbox(&mut click.enabled, "Enable click");
+                                    ui.add(egui::Slider::new(&mut click.gain, 0.0..=1.0).text("Level"));
+                                    ui.label(egui::RichText::new("Accents beat one in 4/4. Follows master level; excluded from exports.").size(12.0).color(MUTED));
+                                });
+                                if click != self.project.metronome {
+                                    self.edit(|project| project.metronome = click);
+                                }
                                 ui.add_space(6.0);
                                 let position = self.position();
                                 ui.vertical(|ui| {

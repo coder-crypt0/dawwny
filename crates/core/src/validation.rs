@@ -40,6 +40,7 @@ pub fn validate(p: &Project) -> Result<()> {
         "Project length must be 1–256 bars"
     );
     range(p.master_gain, 0.0, 1.0, "Master gain")?;
+    range(p.metronome.gain, 0.0, 1.0, "Metronome gain")?;
     ensure!(
         p.tracks.len() <= 32,
         "A session can contain at most 32 tracks"
