@@ -985,7 +985,7 @@ impl Studio {
                     }
                 });
             });
-            if ui.button("Duplicate").clicked() {
+            if ui.button("Duplicate").on_hover_text("Duplicate selected clip · Ctrl+D").clicked() {
                 self.duplicate_clip();
             }
             if ui.button("Delete clip").clicked() {

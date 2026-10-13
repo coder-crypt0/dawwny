@@ -538,11 +538,25 @@ impl Studio {
             .cloned()
         {
             c.start += c.length;
+            let required_bars = ((c.start + c.length) / 4.0).ceil() as u32;
+            if required_bars > 256 {
+                self.fail("The duplicate would exceed the 256-bar session limit. Move the clip earlier before duplicating it.".into());
+                return;
+            }
             c.id = dawwny_core::new_id();
             for n in &mut c.notes {
                 n.id = dawwny_core::new_id();
             }
-            self.edit(|p| p.tracks[ti].clips.push(c));
+            let new_index = self.project.tracks[ti].clips.len();
+            self.edit(|p| {
+                p.length_bars = p.length_bars.max(required_bars);
+                p.tracks[ti].clips.push(c);
+            });
+            if self.project.tracks[ti].clips.len() == new_index + 1 {
+                self.selected_clip = new_index;
+                self.note_drag = None;
+                self.clip_drag = None;
+            }
         }
     }
 
@@ -725,6 +739,11 @@ impl eframe::App for Studio {
             i.consume_key(egui::Modifiers::CTRL | egui::Modifiers::SHIFT, egui::Key::M)
         }) {
             self.toggle_metronome();
+        }
+        if !ctx.wants_keyboard_input()
+            && ctx.input_mut(|i| i.consume_key(egui::Modifiers::CTRL, egui::Key::D))
+        {
+            self.duplicate_clip();
         }
         if !ctx.wants_keyboard_input()
             && ctx.input_mut(|i| i.consume_key(egui::Modifiers::CTRL, egui::Key::Z))
