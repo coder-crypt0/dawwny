@@ -1,7 +1,7 @@
 use crate::{LiveEvent, Renderer, compile, dsp::MixSnapshot};
 use anyhow::{Context, Result, bail, ensure};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use dawwny_core::{CycleRange, Project};
+use dawwny_core::{CycleRange, MetronomeSettings, Project};
 use rtrb::{Consumer, Producer, RingBuffer};
 use std::sync::{
     Arc, Mutex,
@@ -34,6 +34,7 @@ enum Command {
     Live(LiveEvent),
     Cycle(Option<CycleRange>),
     Capture(bool),
+    Metronome(MetronomeSettings, f32),
 }
 #[derive(Clone, Copy, Debug)]
 pub struct RecordedEvent {
@@ -53,6 +54,7 @@ struct Runtime {
     cycle_frames: Option<(u64, u64)>,
     recording: bool,
     recorded: Producer<RecordedEvent>,
+    metronome: crate::metronome::Metronome,
 }
 impl Runtime {
     fn begin_block(&mut self) {
@@ -73,6 +75,7 @@ impl Runtime {
                         renderer.seek_beats(self.arrangement.position_beats());
                     }
                     let old = std::mem::replace(&mut self.arrangement, renderer);
+                    self.metronome.set_tempo(self.arrangement.tempo());
                     self.update_cycle_frames();
                     // Capacity was checked above; only this thread writes to this queue.
                     let _ = self.retired.push(old);
@@ -84,6 +87,9 @@ impl Runtime {
                 }
                 Command::Mix(mix) => self.arrangement.apply_mix(mix),
                 Command::MonitorMix(mix) => self.monitor.apply_mix(mix),
+                Command::Metronome(settings, master_gain) => {
+                    self.metronome.set_mix(settings, master_gain)
+                }
                 Command::Live(event) => {
                     self.capture(event);
                     self.monitor.live_event(event);
@@ -161,7 +167,15 @@ impl Runtime {
                 }
             }
             if self.arrangement.frame() < self.arrangement.total_frames() {
+                let cue = if self.arrangement.frame() < self.arrangement.song_frames() {
+                    self.metronome.sample(self.arrangement.frame())
+                } else {
+                    0.0
+                };
                 stereo = self.arrangement.next_frame();
+                for sample in &mut stereo {
+                    *sample = (*sample + cue).clamp(-0.95, 0.95);
+                }
             } else {
                 self.state.playing.store(false, Ordering::Relaxed);
             }
@@ -320,6 +334,12 @@ impl AudioEngine {
                     .context("Restart the studio to reconnect audio")?,
                 state: self.state.clone(),
                 tail: 0,
+                metronome: crate::metronome::Metronome::new(
+                    self.rate,
+                    project.tempo,
+                    project.metronome,
+                    project.master_gain,
+                ),
             };
             let stream = match supported.sample_format() {
                 cpal::SampleFormat::F32 => build::<f32>(&device, &config, runtime),
@@ -335,6 +355,8 @@ impl AudioEngine {
             let previous = self.project.as_ref().context("Missing audio project")?;
             let same_structure = audio_structure_equal(previous, project);
             let cycle_changed = previous.cycle != project.cycle;
+            let metronome_changed = previous.metronome != project.metronome
+                || previous.master_gain != project.master_gain;
             let monitor_changed = self.selected != selected
                 || previous.tempo != project.tempo
                 || previous
@@ -357,6 +379,9 @@ impl AudioEngine {
             };
             if cycle_changed {
                 self.send(Command::Cycle(project.cycle))?;
+            }
+            if metronome_changed {
+                self.send(Command::Metronome(project.metronome, project.master_gain))?;
             }
             if let Some(renderer) = arrangement {
                 self.send(Command::Replace {
@@ -666,6 +691,12 @@ mod tests {
                 cycle_frames: None,
                 recording: false,
                 recorded,
+                metronome: crate::metronome::Metronome::new(
+                    16000,
+                    p.tempo,
+                    p.metronome,
+                    p.master_gain,
+                ),
             },
             producer,
             consumer,

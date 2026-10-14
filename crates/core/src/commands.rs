@@ -24,6 +24,12 @@ pub fn apply_commands(p: &Project, commands: &[Command]) -> Result<Project> {
             Command::RenameProject { name } => n.name = name.clone(),
             Command::SetLength { length_bars } => n.length_bars = *length_bars,
             Command::SetMasterGain { gain } => n.master_gain = *gain,
+            Command::SetMetronome { enabled, gain } => {
+                n.metronome.enabled = *enabled;
+                if let Some(gain) = gain {
+                    n.metronome.gain = *gain;
+                }
+            }
             Command::SetSections { sections } => n.sections = sections.clone(),
             Command::SetCycleRange { range } => n.cycle = *range,
             Command::AddTrack { track } => n.tracks.push(track.clone()),

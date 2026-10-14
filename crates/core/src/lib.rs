@@ -30,10 +30,29 @@ pub struct Project {
     pub tempo: f64,
     pub length_bars: u32,
     pub master_gain: f32,
+    #[serde(default)]
+    pub metronome: MetronomeSettings,
     pub tracks: Vec<Track>,
     pub sections: Vec<Section>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cycle: Option<CycleRange>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq)]
+#[serde(default, deny_unknown_fields)]
+pub struct MetronomeSettings {
+    pub enabled: bool,
+    /// Monitor level, independent of track mute/solo; follows master gain.
+    pub gain: f32,
+}
+
+impl Default for MetronomeSettings {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            gain: 0.5,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
@@ -148,6 +167,11 @@ pub enum Command {
     SetMasterGain {
         gain: f32,
     },
+    SetMetronome {
+        enabled: bool,
+        /// Omit to preserve the current click level.
+        gain: Option<f32>,
+    },
     AddTrack {
         track: Track,
     },
@@ -234,6 +258,7 @@ impl Default for Project {
             tempo: 92.0,
             length_bars: 16,
             master_gain: 0.7,
+            metronome: MetronomeSettings::default(),
             tracks: Vec::new(),
             sections: Vec::new(),
             cycle: None,

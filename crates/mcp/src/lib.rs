@@ -178,7 +178,7 @@ impl DawwnyMcp {
         .map_err(|e| e.to_string())?
     }
     #[tool(
-        description = "Apply 1–256 validated musical commands atomically to the configured local project. Requires the current expected_revision. IDs must be unique. Fixed 4/4, 30–300 BPM, 32 tracks, 128 clips, 32768 notes. Use list_sounds to discover presets. Custom oscillator/filter/LFO settings apply to instrument synth; ordered effects apply to every instrument. Use list_sample_presets then set_sample_instrument to load local SF2 samples; missing banks and unknown programs are rejected before saving. update_track replaces the entire patch, so preserve settings you want to keep. After a revision conflict read_project again; never blindly retry old changes."
+        description = "Apply 1–256 validated musical commands atomically to the configured local project. Requires the current expected_revision. IDs must be unique. Fixed 4/4, 30–300 BPM, 32 tracks, 128 clips, 32768 notes. Use list_sounds to discover presets. Custom oscillator/filter/LFO settings apply to instrument synth; ordered effects apply to every instrument. Use list_sample_presets then set_sample_instrument to load local SF2 samples; missing banks and unknown programs are rejected before saving. set_metronome controls the native playback cue, enabled and optional gain 0–1; it is excluded from MIDI/WAV exports. update_track replaces the entire patch, so preserve settings you want to keep. After a revision conflict read_project again; never blindly retry old changes."
     )]
     async fn apply_commands(
         &self,

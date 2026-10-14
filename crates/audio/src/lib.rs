@@ -2,6 +2,7 @@
 mod device;
 mod dsp;
 mod fx;
+mod metronome;
 mod sampler;
 mod synth;
 pub use device::{AudioEngine, MidiPort, RecordedEvent};

@@ -9,7 +9,7 @@ Run `cargo run -p dawwny-app`, or open the release `dawwny.exe`. A new session s
 - Click a clip to open its piano roll. Drag a clip to move it on the quantized grid.
 - Double-click an empty track lane to create a one-bar clip. Add instruments with **+ Track**.
 - Click empty piano-roll space to add a note. Set grid, note length, and velocity for new notes in the editor toolbar. Drag notes to change time and pitch. Right-click a note to open its properties, where you can edit pitch, length, and velocity or delete it.
-- Use **Duplicate** to copy a clip immediately after its end. A copy that extends past the session end is rejected; lengthen the project first.
+- In current source builds, **Duplicate** or **Ctrl+D** copies the selected clip immediately after its end and selects the copy. The session extends automatically when needed, up to 256 bars. Duplication and any length change undo together. This improvement is newer than the v0.1.0 EXE.
 - Toggle **Sounds** in the top bar or press **L** to open the 2,310-entry sound library. Browse its 12 categories, search names/families/tags, favorite presets, select a result, then **Preview** it or **Use sound** on the selected track. The catalog is generated from 72 sound families with 32 parameter variations each, plus six signature presets; this count describes catalog recipes, not a claim that every patch was professionally auditioned. Preview uses a separate temporary playback engine and does not edit the project. Using a sound changes the selected track's instrument and patch while preserving its notes and mix; if there are no tracks, a synth track is created.
 - **Sound** edits the selected track's instrument, name, synth, envelope, cutoff, reverb, delay, gain, and pan.
 - **Mixer** provides track faders, mute/solo, pan, and a master fader.
@@ -33,7 +33,7 @@ Velocity is preserved. Sustain extends note durations until pedal release; notes
 
 A finished take also gets a local recovery project in `.dawwny-takes` beside the session. These copies are excluded from Git. If an agent removes the track or shortens the song during a take, the recovery copy preserves the performance that cannot fit. If both insertion and backup fail, Keys offers **Save recovered take** and a new recording is blocked until it is saved. Input overflow is reported in Keys rather than presented as a complete take.
 
-This stage records MIDI notes, not microphone audio. Count-in, metronome, punch-in/out, loop-take comping and record latency compensation are not implemented.
+This stage records MIDI notes, not microphone audio. Count-in, punch-in/out, loop-take comping and record latency compensation are not implemented. Current source builds include a metronome; see below.
 
 ## Files and export
 
@@ -54,3 +54,8 @@ Example agent request: “Read this session, add a soft bass line following the 
 This is a MIDI composition prototype, not a full Logic Pro replacement. Native plugin hosting, sample/audio tracks, audio recording and controller mapping, automation lanes, tempo maps, plugin delay compensation, per-note expression, stems, and remote collaboration are future milestones. It has no network listener and no site deployment. Hostinger will be considered when remote access is implemented.
 
 **Sample instruments:** in Sounds, open Sample instruments, import a local SF2, search its actual names and use a preset. Ctrl+K auditions it. [Installation and agent workflow](sample-instruments.md).
+## Metronome
+
+In current source builds, **Click** in the transport or **Ctrl+Shift+M** toggles a native metronome. Right-click Click to set its level. Beat one is accented in 4/4. The cue follows the audio clock through tempo changes, seeking and section cycling, and stays silent while paused or after the arrangement ends. It follows master level and remains audible when tracks are muted or soloed.
+
+Click settings save with the session and participate in undo/redo. Agents can use `set_metronome` through MCP. The cue is excluded from MIDI and WAV exports and from sound-library previews. This feature is newer than the v0.1.0 downloadable EXE and requires a source build until the next release.

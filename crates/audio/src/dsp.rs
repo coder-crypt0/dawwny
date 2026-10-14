@@ -461,6 +461,9 @@ impl Renderer {
     pub fn frame(&self) -> u64 {
         self.frame
     }
+    pub(crate) fn tempo(&self) -> f64 {
+        self.plan.tempo
+    }
     pub(crate) fn frame_at_beat(&self, beat: f64) -> u64 {
         (beat * self.plan.sample_rate as f64 * 60.0 / self.plan.tempo)
             .round()
